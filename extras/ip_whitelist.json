@@ -1,0 +1,12 @@
+{
+	"approved_ranges":{
+		"1":{
+			"name":"main_campus",
+			"network":"198.168.0.0/8"
+			},
+		"2":{
+			"name":"airbears2",
+			"network":"127.0.0.0/24"
+		}
+	}
+}

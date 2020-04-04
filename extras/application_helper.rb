@@ -49,10 +49,17 @@ module ApplicationHelper
     # access_code is set by by complicated SQL expression and results in an integer code_s in solr
     access_code = options[:document][:code_s]
     # access_code==4 => "World", everything else is restricted
+    restricted = true
     if access_code == '4'
       restricted = false
     else
-      restricted = true
+      client_address = request.remote_ip
+      on_campus = check_ip(client_address)
+      if on_campus
+        restricted = false
+      else
+        nil
+      end
     end
     render_pdf options[:value].first, restricted
   end
