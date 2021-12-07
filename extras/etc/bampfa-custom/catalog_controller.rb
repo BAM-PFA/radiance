@@ -101,13 +101,6 @@ class CatalogController < ApplicationController
     #  (useful when user clicks "more" on a large facet and wants to navigate alphabetically across a large set of results)
     # :index_range can be an array or range of prefixes that will be used to create the navigation (note: It is case sensitive when searching values)
 
-
-    #{facet}
-
-
-    #{facet_dates}
-
-
     #config.add_facet_field 'example_query_facet_field', label: 'Publish Date', :query => {
     #   :years_5 => { label: 'within 5 Years', fq: "pub_date:[#{Time.zone.now.year - 5 } TO *]" },
     #   :years_10 => { label: 'within 10 Years', fq: "pub_date:[#{Time.zone.now.year - 10 } TO *]" },
@@ -204,190 +197,49 @@ class CatalogController < ApplicationController
     config.autocomplete_enabled = true
     config.autocomplete_path = 'suggest'
 
-    #
-    # FACETS
-    #
-
-    # Document record fields
-    config.add_facet_field 'doctype_s', label: 'Document: type', limit: true
-    config.add_facet_field 'doclanguage_ss', label: 'Document: language', limit: true
-    # config.add_facet_field 'pubdatescalar_s', label: 'Document: publication date', limit: true
-    config.add_facet_field("pubdate_i") do |field|
-      field.include_in_advanced_search = false
-      field.label = 'Document: publication year'
-      field.range = true
-      field.index_range = true
-    end
-    config.add_facet_field 'author_ss', label: 'Document: author', limit: true
-    config.add_facet_field 'director_ss', label: 'Document: director as subject', limit: true
-    config.add_facet_field 'filmtitle_ss', label: 'Document: film title', limit: true
-    # config.add_facet_field 'has_ss', label: 'Document: content details', limit: true
-    config.add_facet_field 'country_ss', label: 'Document: film country of production', limit: true
-    config.add_facet_field 'filmyear_ss', label: 'Document: film production year', limit: true
-    config.add_facet_field 'filmlanguage_ss', label: 'Document: film language', limit: true
-    # config.add_facet_field 'genre_ss', label: 'Document: film genre', limit: true
-
-    # Film record fields
-    config.add_facet_field 'film_title_ss', label: 'Film title', limit: true
-    config.add_facet_field 'film_director_ss', label: 'Film director', limit: true
-    # config.add_facet_field 'film_year_ss', label: 'Film year', limit: true
-    config.add_facet_field("film_year_i") do |field|
-      field.include_in_advanced_search = false
-      field.label = 'Film release year'
-      field.range = true
-      field.index_range = true
-    end
-    config.add_facet_field 'film_country_ss', label: 'Film country', limit: true
-    config.add_facet_field 'film_language_ss', label: 'Film language', limit: true
-    # config.add_facet_field 'film_prodco_ss', label: 'Film production company', limit: true
-    # config.add_facet_field 'film_subject_ss', label: 'Film subject(s)', limit: true
-    config.add_facet_field 'film_genre_ss', label: 'Film genre', limit: true
-
-    # only for testing... allows one to see the value of access code in the ui
-    # config.add_facet_field 'code_s', label: 'Access code', limit: true
-
-    # Common fields
-    config.add_facet_field 'common_doctype_s', label: 'Record type', limit: true
-
-    #
-    # SEARCH DROPDOWN & ADVANCED SEARCH
-    #
-
-    [
-        ['doctype_txt', 'Document: type'],
-        ['source_txt', 'Document: source'],
-        ['author_txt', 'Document: author'],
-        ['doclanguage_txt', 'Document: language'],
-        ['pubdate_txt', 'Document: publication year'],
-        # ['biblio_txt', 'Has bibliography'],
-        # ['bx_info_txt', 'Has box info'],
-        # ['cast_cr_txt', 'Has cast credits'],
-        # ['costinfo_txt', 'Has cost info'],
-        # ['dist_co_txt', 'Has distribution company'],
-        # ['filmog_txt', 'Has filmography'],
-        # ['illust_txt', 'Has illustrations'],
-        # ['prod_co_txt', 'Has production co'],
-        # ['tech_cr_txt', 'Has tech credits'],
-        ['director_txt', 'Document: director as subject'],
-        ['title_txt', 'Document: film title'],
-        # ['filmtitle_txt', 'Associated films'],
-        ['country_txt', 'Document: film country'],
-        ['filmyear_txt', 'Document: film year'],
-        ['filmlanguage_txt', 'Document: film language'],
-        ['docnamesubject_txt', 'Document: name subject'],
-        # ['prodco_txt', 'Film production company']
-        # ['genre_txt', 'Film genre(s)'],
-        # the following field needs to stay 'active' for the film/document linking to work properly
-        ['film_id_ss', 'Film ID']
-
-    ].each do |search_field|
-      config.add_search_field(search_field[0]) do |field|
-        field.label = search_field[1]
-        #field.solr_parameters = { :'spellcheck.dictionary' => search_field[0] }
-        field.solr_parameters = {
-            qf: search_field[0],
-            pf: search_field[0]
-        }
-      end
-    end
-
-    #
-    # "SHOW" DISPLAY FIELD
-    #
-
-    # DOCUMENT RECORDS
-    config.add_show_field 'author_ss', label: 'Document author(s)'
-    config.add_show_field 'source_s', label: 'Document source'
-    # config.add_show_field 'srcurl_s', label: 'Document Source URL'
-    config.add_show_field 'pubdate_s', label: 'Publication date'
-    config.add_show_field 'doclanguage_ss', label: 'Document language'
-    config.add_show_field 'doctype_s', label: 'Document type'
-    config.add_show_field 'pages_s', label: 'Number of pages'
-    config.add_show_field 'pg_info_s', label: 'Source pagination'
-    config.add_show_field 'docnamesubject_ss', label: 'Document name subject'
-
-    config.add_show_field 'has_ss', label: 'Document contains'
-    config.add_show_field 'film_info_ss', helper_method: 'render_film_links', label: 'Related films'
-    # config.add_show_field 'biblio_s', label: 'Has bibliography'
-    # config.add_show_field 'bx_info_s', label: 'Has box info'
-    # config.add_show_field 'cast_cr_s', label: 'Has cast credits'
-    # config.add_show_field 'costinfo_s', label: 'Has cost info'
-    # config.add_show_field 'dist_co_s', label: 'Has distribution company'
-    # config.add_show_field 'filmog_s', label: 'Has filmography'
-    # config.add_show_field 'illust_s', label: 'Has illustrations'
-    # config.add_show_field 'prod_co_s', label: 'Has production co'
-    # config.add_show_field 'tech_cr_s', label: 'Has tech credits'
-    # config.add_show_field 'title_ss', label: 'Film title variations'
-    # config.add_show_field 'director_ss', label: 'Film director'
-
-    config.add_show_field 'filmyear_s', label: 'Film release year'
-    config.add_show_field 'country_ss', label: 'Film country(ies)'
-    config.add_show_field 'filmlanguage_ss', label: 'Film language(s)'
-    config.add_show_field 'prodco_ss', label: 'Film production company'
-    config.add_show_field 'genre_ss', label: 'Film genre(s)'
-
-    config.add_show_field 'subject_ss', helper_method: 'render_multiline', label: 'Film subject(s)'
-    config.add_show_field 'blob_ss', helper_method: 'render_linkless_media', label: 'Images'
-    # config.add_show_field 'blob_ss', helper_method: 'render_restricted_media', label: 'Images'
-    # config.add_show_field 'card_ss', helper_method: 'render_media', label: 'Cards'
-		config.add_show_field 'pdf_ss', helper_method: 'check_and_render_pdf', label: 'PDFs'
-		# using docurl as a placeholder until there are real WARC urls in the solr extract
-    config.add_show_field 'docurl_s', helper_method: 'render_warc', label: 'Web Archive'
-    # config.add_show_field 'code_s', label: 'Access code'
-
-    # FILM RECORDS
-    # config.add_show_field 'film_title_ss', label: 'Film title'
-    config.add_show_field 'film_title_variations_ss', label: 'Title variations'
-    config.add_show_field 'film_director_ss', label: 'Director'
-    config.add_show_field 'film_country_ss', label: 'Country(ies)'
-    config.add_show_field 'film_year_ss', label: 'Release year'
-    config.add_show_field 'film_language_ss', label: 'Language(s)'
-    config.add_show_field 'film_prodco_ss', label: 'Production company(ies)'
-    config.add_show_field 'film_genre_ss', label: 'Genre(s)'
-    config.add_show_field 'film_subject_ss', helper_method: 'render_multiline', label: 'Subject(s)'
-    config.add_show_field 'film_doc_count_ss', label: 'Related documents'
-    config.add_show_field 'film_link_ss', helper_method: 'render_doc_link', label: 'View documents'
-    # only for testing... allows one to see the value of access code in the ui
-    # config.add_show_field 'code_s', label: 'Access code'
-
+    # facet
+    config.add_facet_field 'itemclass_s', label: 'Classification', limit: true
+    config.add_facet_field 'artistcalc_s', label: 'Artist', limit: true
+    config.add_facet_field 'artistorigin_s', label: 'Country', limit: true
+    config.add_facet_field 'datemade_s', label: 'Date Made', limit: true
+    config.add_facet_field 'materials_s', label: 'Materials', limit: true
+    config.add_facet_field 'measurement_s', label: 'Dimensions', limit: true
+    config.add_facet_field 'status_s', label: 'Status', limit: true
+    # search
+    config.add_search_field 'idnumber_s', label: 'ID Number'
+    config.add_search_field 'itemclass_s', label: 'Classification'
+    config.add_search_field 'artistcalc_s', label: 'Artist'
+    config.add_search_field 'datemade_s', label: 'Date Made'
+    config.add_search_field 'materials_s', label: 'Materials'
+    config.add_search_field 'artistorigin_s', label: 'Country'
+    config.add_search_field 'title_s', label: 'Title'
+    config.add_search_field 'status_s', label: 'Status'
+    config.add_search_field 'century_s', label: 'Century'
+    # show
+    config.add_show_field 'itemclass_s', label: 'Classification'
+    config.add_show_field 'artistcalc_s', label: 'Artist'
+    config.add_show_field 'artistorigin_s', label: 'Country'
+    config.add_show_field 'artistbirthdate_s', label: 'Artist birth Date'
+    config.add_show_field 'artistdeathdate_s', label: 'Artist death Date'
+    config.add_show_field 'datesactive_s', label: 'Dates Active'
+    config.add_show_field 'datemade_s', label: 'Date Made'
+    config.add_show_field 'measurement_s', label: 'Dimensions'
+    config.add_show_field 'materials_s', label: 'Materials'
+    config.add_show_field 'fullbampfacreditline_s', label: 'Full BAMPFA credit line'
+    config.add_show_field 'copyrightcredit_s', label: 'Copyright credit'
+    config.add_show_field 'century_s', label: 'Century'
+    config.add_show_field 'blob_ss', helper_method: 'render_media', label: 'Images'
     # gallery
-
-    #
-    # "INDEX" DISPLAY FIELDS
-    #
-
-    # Document records
-    config.add_index_field 'common_doctype_s', label: 'Record type'
-    config.add_index_field 'doctype_s', label: 'Document type'
-    config.add_index_field 'author_ss', label: 'Document author(s)'
-    config.add_index_field 'pubdate_s', label: 'Publication date'
-    config.add_index_field 'source_s', label: 'Document source'
-    # config.add_index_field 'doclanguage_ss', label: 'Document language'
-
-    config.add_index_field 'has_ss', label: 'Document contains'
-    config.add_index_field 'pages_s', label: 'Number of pages'
-    # config.add_index_field 'pg_info_s', label: 'Source pagination'
-    config.add_index_field 'film_info_ss', helper_method: 'render_film_links', label: 'Related films'
-
-    # Film records
-    config.add_index_field 'film_director_ss', label: 'Film director'
-    config.add_index_field 'film_country_ss', label: 'Country(ies)'
-    # config.add_index_field 'filmyear_s', label: 'Release year'
-    # config.add_index_field 'film_title_ss', label: 'Film title'.
-    config.add_index_field 'film_language_ss', label: 'Language'
-    config.add_index_field 'film_year_ss', label: 'Release year'
-    config.add_index_field 'film_link_ss', helper_method: 'render_doc_link', label: 'Related documents'
-
+    # index
+    config.add_index_field 'idnumber_s', label: 'ID Number'
+    config.add_index_field 'artistcalc_s', label: 'Artist'
+    config.add_index_field 'itemclass_s', label: 'Classification'
+    config.add_index_field 'measurement_s', label: 'Dimensions'
+    config.add_index_field 'materials_s', label: 'Materials'
     # sort
-    config.index.title_field = 'common_title_ss'
-    config.show.title_field = 'common_title_ss'
-    # config.add_sort_field 'doctitle_ss asc', label: 'document title'
-    # config.add_sort_field 'film_info_ss asc', label: 'first film title'
-    config.add_sort_field 'common_title_ss asc', label: 'Title A-Z'
-    config.add_sort_field 'common_title_ss desc', label: 'Title Z-A'
-    config.add_sort_field 'pubdatescalar_s asc', label: 'Document publication date'
-    config.add_sort_field 'film_year_ss asc', label: 'Film release date'
-
+    config.index.title_field = 'title_s'
+    config.show.title_field = 'title_s'
+    config.add_sort_field 'title_s asc', label: 'Title'
   end
 
   def decode_ark
@@ -404,6 +256,6 @@ class CatalogController < ApplicationController
 
     redirect_to :controller => 'catalog', action: 'index', search_field: 'objmusno_s_lower', q: '"' + museum_number + '"'
     #redirect_to  :controller => 'catalog', action: 'show', id: csid
-  end
 
+  end
 end

@@ -8,7 +8,14 @@ extra_dir="../extras"
 
 WHOLE_LIST="bampfa botgarden cinefiles pahma ucjeps"
 
-cd portal
+if [ ! -d portal ]; then
+  echo "Can't find 'portal' directory. Please verify name and location"
+  echo "This script must be executed from the base dir of the ucb blacklight customization (i.e. radiance)"
+  echo "$0 tenant"
+  exit
+fi
+
+cd portal || exit
 
 # check the command line parameters
 
@@ -29,15 +36,6 @@ fi
 # 'customize' the code in the extras directory
 perl -i -pe "s/#TENANT#/${tenant}/g" ${extra_dir}/* 2>&1
 
-if [ ! -f "${portal_config_file}" ]; then
-  echo "Can't find portal config file '${portal_config_file}'. skipping autogeneration of catalog_controller"
-else
-  # configure generic tenant BL controller using existing Portal config file
-  python3 ${extra_dir}/ucb_bl.py ${portal_config_file} > bl_config_temp.txt
-  cat ${extra_dir}/catalog_controller.template bl_config_temp.txt > app/controllers/catalog_controller.rb
-  rm bl_config_temp.txt
-fi
-
 # now apply customizations, if any
 
 # nb: the header logos for all ucb tenants are already in the public static directory
@@ -50,16 +48,15 @@ cp public/header-logo-${tenant}.png public/header-logo.png
 cp ${extra_dir}/cspace_fav.png app/assets/images/favicon.png
 cp ${extra_dir}/${tenant}_favicon.png app/assets/images/favicon.png
 
-# generic helpers and config, but they do need to be configured per-tenant
-cp ${extra_dir}/${tenant}_application_helper.rb app/helpers/application_helper.rb
-# cp ${extra_dir}/application_helper.rb app/helpers
+# generic helpers and config, but some do need to be configured per-tenant
+cp ${extra_dir}/application.rb config/application.rb
+cp ${extra_dir}/application_helper.rb app/helpers
+cp ${extra_dir}/routes.rb config/routes.rb
 cp ${extra_dir}/catalog_helper_behavior.rb app/helpers/blacklight
 cp ${extra_dir}/blacklight.yml config
 cp ${extra_dir}/blacklight.en.yml config/locales
-cp ${extra_dir}/${tenant}_production.rb config/environments/production.rb
-# cp ${extra_dir}/${tenant}_application.rb config/application.rb
-# cp ${extra_dir}/${tenant}_routes.rb config/routes.rb
 
+cp ${extra_dir}/${tenant}_production.rb config/environments/production.rb
 cp ${extra_dir}/${tenant}_blacklight.en.yml config/locales/blacklight.en.yml
 
 # use our generic header, footer, etc. partials
