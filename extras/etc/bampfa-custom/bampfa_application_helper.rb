@@ -1,5 +1,69 @@
 module ApplicationHelper
 
+  include Blacklight::SearchHelper
+  def get_random_documents(limit=10)
+    require 'securerandom'
+    random_string = SecureRandom.uuid[0,5]
+    params = {
+      # :q => '*:*',
+      :q => 'blob_ss:[* TO *]',
+      # :fl => 'id',
+			:rows => limit,
+      :sort => 'random_%s desc' % random_string
+    }
+    builder = search_builder.with(params)
+    response = repository.search(builder)
+		docs = response[:response][:docs].collect { |x| x.slice(:id,:title_txt,:artistcalc_txt,:datemade_s, :blob_ss)}
+  end
+
+	def generate_carousel_images
+		docs = get_random_documents()
+		docs.collect do |doc|
+			content_tag(:div) do
+				unless doc[:title_txt].nil?
+					title = doc[:title_txt][0]
+				end
+				unless doc[:artistcalc_txt].nil?
+					artist = doc[:artistcalc_txt][0]
+				end
+				content_tag(:a, content_tag(:img, '',
+          src: render_csid(doc[:blob_ss][0], 'Medium'),
+          class: 'thumbclass'),
+					href: "/catalog/#{doc[:id]}") +
+				content_tag(:h3, title) +
+				content_tag(:h4, artist)
+				# content_tag(:span, doc[:blob_ss])
+
+			end
+		end.join.html_safe
+	end
+
+	def generate_image_gallery
+		docs = get_random_documents()
+		docs.collect do |doc|
+			content_tag(:div, class: 'gallery-item') do
+				unless doc[:title_txt].nil?
+					title = doc[:title_txt][0]
+				end
+				unless doc[:artistcalc_txt].nil?
+					artist = doc[:artistcalc_txt][0]
+				end
+				unless doc[:datemade_s].nil?
+					datemade = doc[:datemade_s]
+				end
+				content_tag(:a, content_tag(:img, '',
+          src: render_csid(doc[:blob_ss][0], 'Medium'),
+          class: 'thumbclass'),
+					href: "/catalog/#{doc[:id]}") +
+					content_tag(:h4) do
+						content_tag(:span, artist, class: "gallery-caption-text") +
+						content_tag(:span, content_tag(:em, title), class: "gallery-caption-text") +
+						content_tag(:span, content_tag(:em, datemade), class: "gallery-caption-text")
+					end
+			end
+		end.join.html_safe
+	end
+
   def render_csid csid, derivative
     "https://webapps.cspace.berkeley.edu/bampfa/imageserver/blobs/#{csid}/derivatives/#{derivative}/content"
   end

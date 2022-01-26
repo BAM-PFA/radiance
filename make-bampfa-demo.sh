@@ -5,16 +5,19 @@
 #
 cd extras
 # application functionality/config
-cp etc/bampfa-custom/application_helper.rb ../portal/app/helpers/application_helper.rb
-cp etc/bampfa-custom/blacklight.yml ../portal/config/blacklight.yml
-cp etc/bampfa-custom/bampfa_catalog_controller.rb ../portal/app/controllers/catalog_controller.rb
+cp etc/bampfa-custom/bampfa_application_helper.rb ../portal/app/helpers/application_helper.rb
 cp etc/bampfa-custom/catalog_helper_behavior.rb ../portal/app/helpers/blacklight/catalog_helper_behavior.rb
+cp etc/bampfa-custom/bampfa_catalog_controller.rb ../portal/app/controllers/catalog_controller.rb
+cp etc/bampfa-custom/blacklight.yml ../portal/config/blacklight.yml
 cp etc/bampfa-custom/bampfa_extras.scss ../portal/app/assets/stylesheets/extras.scss
 cp etc/bampfa-custom/global_alerts.rb ../portal/config/initializers/global_alerts.rb
 cp etc/bampfa-custom/production.rb ../portal/config/environments/production.rb
 
 # custom views
+cp etc/bampfa-custom/bampfa_blacklight.html.erb ../portal/app/views/layouts/blacklight.html.erb
 cp etc/bampfa-custom/bampfa_splash.html.erb ../portal/app/views/shared/_splash.html.erb
+cp etc/bampfa-custom/bampfa_show_default.html.erb ../portal/app/views/catalog/_show_default.html.erb
+cp etc/bampfa-custom/bampfa_carousel.html.erb ../portal/app/views/shared/_carousel.html.erb
 cp etc/bampfa-custom/bampfa_header_navbar.html.erb ../portal/app/views/shared/_header_navbar.html.erb
 cp etc/bampfa-custom/bampfa_footer.html.erb ../portal/app/views/shared/_footer.html.erb
 cp etc/bampfa-custom/_social.html.erb ../portal/app/views/shared/_social.html.erb

@@ -178,6 +178,17 @@ h3.index_title > a {
     font-family: MontserratMedium, Helvetica, Arial, sans-serif;
 }
 
+.show-field-label {
+  font-family: Montserrat, Helvetica, Arial, sans-serif;
+  font-weight: bold;
+}
+
+.show-field-value {
+  font-family: Montserrat, Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  font-size: 14px;
+}
+
 // END FONT STUFF
 
 #startOverLink, .advanced-search-start-over {
@@ -189,4 +200,38 @@ h3.index_title > a {
   color: #212121;
   background-color: #fab946;
   border-color: #e6fdfe;
+}
+
+// IMAGE GALLERY STUFF
+// TAKEN FROM https://ehtmlu.com/blog/simple-css-image-grid/
+.imageGallery {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	box-sizing: border-box;
+	font-size: 1rem;
+}
+
+.imageGallery .gallery-item {
+  position: relative;
+  overflow: clip;
+	// white-space: nowrap;
+	display: block;
+	// display: table;
+}
+
+.imageGallery .gallery-item img {
+	max-width: 100%;
+	max-height: 100%;
+  vertical-align: middle;
+}
+
+.gallery-caption-text::after {
+    content: "\a";
+    white-space: pre;
+}
+
+.draggable {
+  user-select: none;
+  touch-action: none;
 }
