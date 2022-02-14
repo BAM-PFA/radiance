@@ -12,6 +12,7 @@ cp etc/bampfa-custom/blacklight.yml ../portal/config/blacklight.yml
 cp etc/bampfa-custom/bampfa_extras.scss ../portal/app/assets/stylesheets/extras.scss
 cp etc/bampfa-custom/global_alerts.rb ../portal/config/initializers/global_alerts.rb
 cp etc/bampfa-custom/production.rb ../portal/config/environments/production.rb
+cp -r extras/etc/bampfa-custom/blacklight portal/lib/
 
 # custom views
 cp etc/bampfa-custom/bampfa_blacklight.html.erb ../portal/app/views/layouts/blacklight.html.erb

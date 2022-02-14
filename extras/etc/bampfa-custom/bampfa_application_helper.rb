@@ -1,47 +1,52 @@
 module ApplicationHelper
 
   include Blacklight::SearchHelper
-  def get_random_documents(limit=10)
+  def get_random_documents(limit=10,cursorMark='*')
     require 'securerandom'
-    random_string = SecureRandom.uuid[0,5]
+    random_string = SecureRandom.uuid#[0,5]
     params = {
-      # :q => '*:*',
       :q => 'blob_ss:[* TO *]',
-      # :fl => 'id',
+			:cursorMark => cursorMark,
 			:rows => limit,
-      :sort => 'random_%s desc' % random_string
+      :sort => 'random_%s asc, id asc' % random_string
     }
     builder = search_builder.with(params)
     response = repository.search(builder)
+		nextCursorMark = response[:nextCursorMark]
 		docs = response[:response][:docs].collect { |x| x.slice(:id,:title_txt,:artistcalc_txt,:datemade_s, :blob_ss)}
-  end
-
-	def generate_carousel_images
-		docs = get_random_documents()
-		docs.collect do |doc|
-			content_tag(:div) do
-				unless doc[:title_txt].nil?
-					title = doc[:title_txt][0]
-				end
-				unless doc[:artistcalc_txt].nil?
-					artist = doc[:artistcalc_txt][0]
-				end
-				content_tag(:a, content_tag(:img, '',
-          src: render_csid(doc[:blob_ss][0], 'Medium'),
-          class: 'thumbclass'),
-					href: "/catalog/#{doc[:id]}") +
-				content_tag(:h3, title) +
-				content_tag(:h4, artist)
-				# content_tag(:span, doc[:blob_ss])
-
-			end
-		end.join.html_safe
+		return nextCursorMark, docs
 	end
 
-	def generate_image_gallery
-		docs = get_random_documents()
+	# def generate_carousel_images
+	# 	result = get_random_documents()
+	# 	docs = result[1]
+	# 	nextCursorMark = result[0]
+	# 	docs.collect do |doc|
+	# 		content_tag(:div) do
+	# 			unless doc[:title_txt].nil?
+	# 				title = doc[:title_txt][0]
+	# 			end
+	# 			unless doc[:artistcalc_txt].nil?
+	# 				artist = doc[:artistcalc_txt][0]
+	# 			end
+	# 			content_tag(:a, content_tag(:img, '',
+  #         src: render_csid(doc[:blob_ss][0], 'Medium'),
+  #         class: 'thumbclass'),
+	# 				href: "/catalog/#{doc[:id]}") +
+	# 			content_tag(:h3, title) +
+	# 			content_tag(:h4, artist)
+	# 			# content_tag(:span, doc[:blob_ss])
+	#
+	# 		end
+	# 	end.join.html_safe
+	# end
+
+	def generate_image_gallery(cursorMark='*')
+		result = get_random_documents(limit=10,cursorMark=cursorMark)
+		docs = result[1]
+		nextCursorMark = result[0]
 		docs.collect do |doc|
-			content_tag(:div, class: 'gallery-item') do
+			content_tag(:div, class: 'gallery-item',id: nextCursorMark) do
 				unless doc[:title_txt].nil?
 					title = doc[:title_txt][0]
 				end
@@ -51,6 +56,7 @@ module ApplicationHelper
 				unless doc[:datemade_s].nil?
 					datemade = doc[:datemade_s]
 				end
+				#content_tag(:div,nextCursorMark.keys)+
 				content_tag(:a, content_tag(:img, '',
           src: render_csid(doc[:blob_ss][0], 'Medium'),
           class: 'thumbclass'),
@@ -62,6 +68,10 @@ module ApplicationHelper
 					end
 			end
 		end.join.html_safe
+	end
+
+	def add_image_gallery_results(nextCursorMark)
+
 	end
 
   def render_csid csid, derivative

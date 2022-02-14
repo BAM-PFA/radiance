@@ -39,10 +39,24 @@
 
 <!-- this is an option for a carousel using Slick.js -->
 <!-- <div class='carousel' data-slick='{"slidesToShow": 4, "slidesToScroll": 4}'>
-	<%= generate_carousel_images %>
+	<%# <%= generate_carousel_images %> %>
 </div> -->
 
 <!-- and this is an option for a simple grid display  -->
-<div class="imageGallery">
+<div class="imageGallery" id="image-gallery-container">
 	<%= generate_image_gallery %>
+	<%= link_to "Load more", '#', remote: true, id: 'add-more-button' %>
 </div>
+
+<script type="text/javascript">
+	function loadData(){
+		let newPage = '<%= generate_image_gallery %>';
+		newPage.forEach(function(item){
+			document.getElementById('image-gallery-container').appendChild(item);
+		});
+	}
+	const addMore = document.getElementById('add-more-button')
+	addMore.addEventListener("click", function() {
+			loadData()
+    });
+</script>
