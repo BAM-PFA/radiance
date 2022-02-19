@@ -45,15 +45,23 @@
 <!-- and this is an option for a simple grid display  -->
 <div class="imageGallery" id="image-gallery-container">
 	<%= generate_image_gallery %>
+</div>
+<div class="btn-primary">
 	<%= link_to "Load more", '#', remote: true, id: 'add-more-button' %>
 </div>
 
 <script type="text/javascript">
 	function loadData(){
-		let newPage = '<%= generate_image_gallery %>';
-		newPage.forEach(function(item){
+		var newPage = '<%= generate_image_gallery %>';
+		var parser = new DOMParser();
+		var doc = parser.parseFromString(newPage, "text/html");
+		const cards = doc.querySelectorAll('.gallery-item');
+
+		const arr = Array.from(cards);
+		arr.forEach(function(item){
 			document.getElementById('image-gallery-container').appendChild(item);
 		});
+
 	}
 	const addMore = document.getElementById('add-more-button')
 	addMore.addEventListener("click", function() {
