@@ -45,6 +45,24 @@ module ApplicationHelper
 		result = get_random_documents(limit=10,cursorMark=cursorMark)
 		docs = result[1]
 		nextCursorMark = result[0]
+		return format_image_gallery_results(docs,nextCursorMark)
+	end
+
+	include ActionController::MimeResponds
+	def add_gallery_items(nextCursorMark="*")
+		result = get_random_documents(limit=10,cursorMark=nextCursorMark)
+		docs = result[1]
+		nextCursorMark = result[0]
+		# return format_image_gallery_results(docs, nextCursorMark)
+		# puts docs
+		respond_to do |format|
+      format.html { redirect_to "#"}
+			# format.json
+      format.js
+		end
+	end
+
+	def format_image_gallery_results(docs,nextCursorMark)
 		docs.collect do |doc|
 			content_tag(:div, class: 'gallery-item',id: nextCursorMark) do
 				unless doc[:title_txt].nil?
@@ -68,10 +86,6 @@ module ApplicationHelper
 					end
 			end
 		end.join.html_safe
-	end
-
-	def add_image_gallery_results(nextCursorMark)
-
 	end
 
   def render_csid csid, derivative
