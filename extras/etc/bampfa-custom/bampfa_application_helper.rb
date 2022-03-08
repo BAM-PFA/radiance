@@ -1,6 +1,6 @@
 module ApplicationHelper
 
-  include Blacklight::SearchHelper
+	include Blacklight::SearchHelper
   def get_random_documents(limit=10,cursorMark='*')
     require 'securerandom'
     random_string = SecureRandom.uuid#[0,5]
@@ -17,49 +17,11 @@ module ApplicationHelper
 		return nextCursorMark, docs
 	end
 
-	# def generate_carousel_images
-	# 	result = get_random_documents()
-	# 	docs = result[1]
-	# 	nextCursorMark = result[0]
-	# 	docs.collect do |doc|
-	# 		content_tag(:div) do
-	# 			unless doc[:title_txt].nil?
-	# 				title = doc[:title_txt][0]
-	# 			end
-	# 			unless doc[:artistcalc_txt].nil?
-	# 				artist = doc[:artistcalc_txt][0]
-	# 			end
-	# 			content_tag(:a, content_tag(:img, '',
-  #         src: render_csid(doc[:blob_ss][0], 'Medium'),
-  #         class: 'thumbclass'),
-	# 				href: "/catalog/#{doc[:id]}") +
-	# 			content_tag(:h3, title) +
-	# 			content_tag(:h4, artist)
-	# 			# content_tag(:span, doc[:blob_ss])
-	#
-	# 		end
-	# 	end.join.html_safe
-	# end
-
 	def generate_image_gallery(cursorMark='*')
 		result = get_random_documents(limit=10,cursorMark=cursorMark)
 		docs = result[1]
 		nextCursorMark = result[0]
 		return format_image_gallery_results(docs,nextCursorMark)
-	end
-
-	include ActionController::MimeResponds
-	def add_gallery_items(nextCursorMark="*")
-		result = get_random_documents(limit=10,cursorMark=nextCursorMark)
-		docs = result[1]
-		nextCursorMark = result[0]
-		# return format_image_gallery_results(docs, nextCursorMark)
-		# puts docs
-		respond_to do |format|
-      format.html { redirect_to "#"}
-			# format.json
-      format.js
-		end
 	end
 
 	def format_image_gallery_results(docs,nextCursorMark)
@@ -74,7 +36,6 @@ module ApplicationHelper
 				unless doc[:datemade_s].nil?
 					datemade = doc[:datemade_s]
 				end
-				#content_tag(:div,nextCursorMark.keys)+
 				content_tag(:a, content_tag(:img, '',
           src: render_csid(doc[:blob_ss][0], 'Medium'),
           class: 'thumbclass'),
