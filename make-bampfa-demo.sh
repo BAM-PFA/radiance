@@ -8,6 +8,7 @@ cd extras
 cp etc/bampfa-custom/bampfa_application_helper.rb ../portal/app/helpers/application_helper.rb
 cp etc/bampfa-custom/catalog_helper_behavior.rb ../portal/app/helpers/blacklight/catalog_helper_behavior.rb
 cp etc/bampfa-custom/bampfa_catalog_controller.rb ../portal/app/controllers/catalog_controller.rb
+cp etc/bampfa-custom/bampfa_gallery_controller.rb ../portal/app/controllers/gallery_controller.rb
 cp etc/bampfa-custom/blacklight.yml ../portal/config/blacklight.yml
 cp etc/bampfa-custom/bampfa_extras.scss ../portal/app/assets/stylesheets/extras.scss
 cp etc/bampfa-custom/global_alerts.rb ../portal/config/initializers/global_alerts.rb

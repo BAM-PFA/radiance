@@ -29,22 +29,28 @@ module ApplicationHelper
 			content_tag(:div, class: 'gallery-item',id: nextCursorMark) do
 				unless doc[:title_txt].nil?
 					title = doc[:title_txt][0]
+				else
+					title = "[No title given]"
 				end
 				unless doc[:artistcalc_txt].nil?
 					artist = doc[:artistcalc_txt][0]
+				else
+					artist = "[No artist given]"
 				end
 				unless doc[:datemade_s].nil?
 					datemade = doc[:datemade_s]
+				else
+					datemade = "[No date given]"
 				end
 				content_tag(:a, content_tag(:img, '',
           src: render_csid(doc[:blob_ss][0], 'Medium'),
           class: 'thumbclass'),
 					href: "/catalog/#{doc[:id]}") +
-					content_tag(:h4) do
-						content_tag(:span, artist, class: "gallery-caption-text") +
-						content_tag(:span, content_tag(:em, title), class: "gallery-caption-text") +
-						content_tag(:span, content_tag(:em, datemade), class: "gallery-caption-text")
-					end
+				content_tag(:h4) do
+					content_tag(:span, title, class: "gallery-caption-title") +
+					content_tag(:span, "("+datemade+")", class: "gallery-caption-date") +
+					content_tag(:span, "by "+artist, class: "gallery-caption-artist")
+				end
 			end
 		end.join.html_safe
 	end
