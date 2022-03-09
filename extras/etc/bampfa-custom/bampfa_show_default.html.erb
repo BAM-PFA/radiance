@@ -1,55 +1,15 @@
 <% doc_presenter = show_presenter(document) %>
 <%# default partial to display solr document fields in catalog show view -%>
 
-<script type="text/javascript">
-  $(document).ready(function(){
-    $('.carousel').slick({
-    dots: true,
-    infinite: false,
-    speed: 300,
-    slidesToShow: 4,
-    slidesToScroll: 4,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 3,
-          infinite: true,
-          dots: true
-        }
-      },
-      {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2
-        }
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1
-        }
-      }
-      // You can unslick at a given breakpoint now by adding:
-      // settings: "unslick"
-      // instead of a settings object
-    ]
-  });
-});
-</script>
-
 <div class="row">
-  <div class="col-sm-6 col-lg-8">
+  <div class="col-sm-12 col-md-7">
     <!-- images -->
     <% unless document[:blob_ss].nil? %>
-        <div class="imageGallery">
+        <div class="show-gallery">
           <% document[:blob_ss].each do |image| %>
             <div class="gallery-item">
 
-              <img src="<%= render_csid(image, 'Medium') %>">
+              <img src="<%= render_csid(image, 'Medium') %>" class="show-image">
               </img>
             </div>
 
@@ -59,13 +19,15 @@
        <p>NO IMAGE</p>
     <% end %>
   </div>
-  <div class="col-sm-6 col-lg-4">
+  <!-- metadata -->
+  <div class="col-sm-12 col-md-5 show-metadata-container">
     <% document_show_fields(document).each do |field_name, field| -%>
       <% unless field_name == "blob_ss" %>
         <% if should_render_show_field? document, field %>
-          <hr>
-    	    <p class="show-field-label blacklight-<%= field_name.parameterize %>"><%= render_document_show_field_label document, field: field_name %></p>
-    	    <p class="show-field-value blacklight-<%= field_name.parameterize %>"><%= doc_presenter.field_value field %></p>
+          <div class="show-field-container">
+            <span class="field-label blacklight-<%= field_name.parameterize %>"><%= render_document_show_field_label document, field: field_name %></span>
+            <div class="field-value blacklight-<%= field_name.parameterize %>"><%= doc_presenter.field_value field %></div>
+          </div>
         <% end -%>
       <% end %>
     <% end -%>

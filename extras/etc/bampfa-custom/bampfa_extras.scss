@@ -18,14 +18,33 @@
 
 .site_footer a {
     color: black;
-    padding: 5px;
-    font-weight: 600;
+    // padding: 5px;
+    font-weight: bold;
+    font-size: 1em;
 }
 
 .site_footer {
-    background-color: #def2fc;
-    color: black;
-    padding: 1em 0 1em 1em;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-size:1.25em;
+  background-color: #def2fc;
+  color: black;
+  padding: 1em 0 1em 1em;
+  font-weight: 100;
+}
+
+.site-footer-text {
+  font-family: RobotoLight, Helvetica, Arial, sans-serif;
+  font-size:1em;
+  color: black;
+  padding: 1em 0 1em 1em;
+  font-weight: normal;
+  word-wrap: break-word;
+}
+
+ul.footer {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
 // NAVBAR
@@ -134,7 +153,13 @@ div {
 }
 
 h4.facets-heading {
-  font-size: 1.5rem;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.75rem;
+}
+
+.facet-field-heading {
+  font-size: 1rem;
 }
 
 .search_field {
@@ -147,15 +172,42 @@ h3.index_title > a {
     font-family: RobotoMedium, Helvetica, Arial, sans-serif;
 }
 
-.show-field-label {
-  font-family: Roboto, Helvetica, Arial, sans-serif;
-  font-weight: bold;
+.show-metadata-container {
+  line-height: 25px;
+  padding-left: 30px;
 }
 
-.show-field-value {
+.field-label {
   font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  float: left;
+}
+
+.field-value {
+  font-family: RobotoLight, Helvetica, Arial, sans-serif;
   font-weight: normal;
   font-size: 14px;
+  margin-left: 10rem;
+}
+
+.show-field-container {
+}
+
+.document h1[itemprop="name"] {
+  // this is document title on the show page
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: 3em;
+}
+
+.index-metadata-container {
+  margin-bottom: 20px;
+  line-height: 22px;
+}
+
+.form-control {
+  font-size: 17px;
+  color: black;
 }
 
 // END FONT STUFF
@@ -191,6 +243,19 @@ h3.index_title > a {
 .imageGallery .gallery-item img {
 	min-width: 300px;
 	max-height: 100%;
+}
+
+.show-gallery {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: repeat(1, minmax(280px,1fr));
+	box-sizing: border-box;
+  margin-bottom: 30px;
+}
+
+.show-image {
+  max-width: 100%;
+  // display: block;
 }
 
 .gallery-caption-title {
