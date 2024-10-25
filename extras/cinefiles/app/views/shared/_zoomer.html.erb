@@ -1,0 +1,34 @@
+<%- if ((current_user && restricted == true) || (restricted == false)) -%>
+  <div id="openseadragon1" style="width: 800px; height: 600px;"></div>
+	<script src="/assets/openseadragon/openseadragon.min.js"></script>
+	<script type="text/javascript">
+	    var viewer = OpenSeadragon({
+	        id: "openseadragon1",
+	        prefixUrl: "/assets/openseadragon/images/",
+	        sequenceMode: true,
+	        showReferenceStrip: true,
+	        tileSources: <%= blob_tile_sources.to_s.html_safe %>
+	    });
+	</script>
+<%- else -%>
+  <div id="copyrightstatement" class="alert alert-info col-sm-12 collapse.show ">
+    <h1>This document is restricted due to copyright</h1>
+    <p class="panel-title">
+      Materials from the BAMPFA Film Library and Study Center’s CineFiles project
+      may be protected by U.S. copyright, and possibly other statutes, even if no copyright symbol appears. Please be advised that we are providing these materials for personal study purposes only, following sections 107 (Fair Use) and 108 (Reproduction by Libraries and Archives) of the U.S. Copyright Act; please contact the publisher to obtain permission for any other type of use.
+    </p>
+    <p><i>
+      In order to access these materials, you must create a free account
+      and indicate that you acknowledge and will comply with these terms.
+      Please click below to sign up;
+      once you have logged in, you will be able to access this document.
+    </i></p>
+    <!-- <p>
+      Thank you for your interest in CineFiles. We would love to hear your comments! Use the feedback link below.
+    </p> -->
+    <p>
+      <a class="btn btn-primary" type="button" href="/users/sign_up">Sign me up!</a>
+      <a class="btn btn-primary" type="button" href="/users/sign_in" style="float: right;">Log in</a>
+    </p>
+  </div>
+<%- end -%>

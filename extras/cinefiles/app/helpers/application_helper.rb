@@ -89,6 +89,28 @@ module ApplicationHelper
     end
   end
 
+  def check_and_render_zoomer options = {}
+    # access_code is set by by complicated SQL expression and results in an integer code_s in solr
+    access_code = options[:document][:code_s]
+    # access_code==4 => "World", everything else is restricted
+    if access_code == '4'
+      restricted = false
+    else
+      restricted = true
+    end
+    # puts options[:value].collect { |csid| "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/" + csid + "/derivatives/OriginalJpeg/content" }
+    # blob_csid_array = options[:value].collect { |csid| "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/" + csid + "/derivatives/OriginalJpeg/content" }
+    render_zoomer options[:value], restricted
+  end
+
+  def render_zoomer blob_csids, restricted
+    blob_url_array = blob_csids.collect { |csid| "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/" + csid + "/derivatives/OriginalJpeg/content" }
+    source = '{"type":"image","url":"%{blob_url}"}'
+    blob_tile_sources = blob_url_array.collect {|url| source % {blob_url: url} }
+    blob_tile_sources
+    render partial: '/shared/zoomer', locals: { blob_tile_sources: blob_tile_sources, restricted: restricted }
+  end
+
   def render_linkless_media options = {}
     # return a list of cards or images
     content_tag(:div) do
