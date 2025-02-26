@@ -1,0 +1,21 @@
+<nav class="navbar navbar-expand-md navbar-light topbar" role="navigation">
+    <div class="justify-content-md-start">
+      <h4>
+        <a href="/" alt="uc botanical garden portal homepage"><img wdith="80%" src="/botgarden-logo.png" alt="uc botanical garden logo"></a>
+      </h4>
+    </div>
+    <div class="collapse navbar-collapse justify-content-md-end" id="user-util-collapse">
+      <%= render 'shared/user_util_links' %>
+    </div>
+</nav>
+
+<%= content_tag :div, class: 'navbar navbar-search bg-light mb-1', role: 'navigation', aria: { label: t('blacklight.search.header') } do %>
+  <div class="<%= container_classes %>">
+    <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component ||Blacklight::SearchBarComponent).new(
+          url: search_action_url,
+          advanced_search_url: search_action_url(action: 'advanced_search'),
+          params: search_state.params_for_search.except(:qt),
+          autocomplete_path: search_action_path(action: :suggest))) %>
+    <%= link_to 'Advanced Search', blacklight_advanced_search_engine.advanced_search_path(search_state.to_h), class: 'advanced_search btn btn-secondary'%>
+  </div>
+<% end %>
