@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-md navbar-light topbar" role="navigation">
   <div class="<%= container_classes %> pl-0">
-    <a class="home-link" href="/">
-      <img class="header-logo" src="/header-logo-pahma.png">
+    <a class="home-link" href="/" title="Hearst Museum collection portal homepage">
+      <img class="header-logo" src="/header-logo-pahma.png" alt="Hearst Museum logo">
       <span href="/">Hearst Museum Portal</span>
     </a>
     <button class="navbar-toggler ml-3" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#user-util-collapse" data-bs-target="#user-util-collapse" aria-controls="user-util-collapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -13,9 +13,9 @@
   </div>
 </nav>
 
-<%= content_tag :div, class: 'navbar navbar-search navbar-light bg-light mb-1', style:'background-image: url(/pahma_17-379a-c.png); width:100%', role: 'navigation', aria: { label: t('blacklight.search.header') } do %>
+<%= content_tag :div, class: 'navbar navbar-search navbar-light bg-light mb-1', style:'background-image: url(/pahma_17-379a-c.png); width:100%', role: 'search' do %>
   <div class="<%= container_classes %>">
-    <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component ||Blacklight::SearchBarComponent).new(
+    <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component || SearchBarComponent).new(
           url: search_action_url,
           advanced_search_url: search_action_url(action: 'advanced_search'),
           params: search_state.params_for_search.except(:qt),

@@ -6,12 +6,6 @@ h1, .h1 {
   background-color: gray !important;
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #08bae7;
-  border-color: #07a6ce;
-}
-
 .thumbnail > img,
 .thumbnail a > img {
   max-height: 200px;
@@ -90,12 +84,15 @@ article .documentHeader {
 .site-footer p {
   line-height: 1.2;
 }
-.site-footer ul li {
+.site-footer ul li:not(.social) {
   max-width: 12em;
   padding: 4px 20px 16px;
 }
 .site-footer ul li a {
   color: gray;
+}
+.site-footer .blacklight-logo {
+  width: 6.25em;
 }
 .site-footer .footer-logo {
   object-fit: cover;

@@ -1,6 +1,8 @@
 <nav class="navbar navbar-expand-md navbar-light topbar" role="navigation">
   <div class="container-fluid">
-    <a href="/" title="Berkeley Art Museum and Pacific Film Archive" ><img src="/header-logo-bampfa.png" alt="bampfa"></a>
+    <a href="/" title="BAMPFA collection portal homepage">
+      <img wdith="80%" src="/header-logo-bampfa.png" alt="bampfa wordmark logo">
+    </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#user-util-collapse" data-bs-target="#user-util-collapse" aria-controls="user-util-collapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -10,9 +12,9 @@
   </div>
 </nav>
 
-<%= content_tag :div, class: 'navbar navbar-search bg-light mb-1', role: 'navigation', aria: { label: t('blacklight.search.header') } do %>
+<%= content_tag :div, class: 'navbar navbar-search bg-light mb-1', role: 'search' do %>
   <div class="<%= container_classes %>">
-    <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component ||Blacklight::SearchBarComponent).new(
+    <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component || SearchBarComponent).new(
           url: search_action_url,
           advanced_search_url: search_action_url(action: 'advanced_search'),
           params: search_state.params_for_search.except(:qt),

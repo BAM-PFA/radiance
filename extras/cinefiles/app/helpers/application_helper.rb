@@ -80,25 +80,51 @@ module ApplicationHelper
     # return a list of cards or images
     content_tag(:div) do
       options[:value].collect do |blob_csid|
-        content_tag(:a, content_tag(:img, '',
-          src: render_csid(blob_csid, 'Medium'),
-          class: 'thumbclass'),
+        content_tag(:a,
+          content_tag(:img, '',
+            src: render_csid(blob_csid, 'Medium'),
+            alt: render_alt_text(blob_csid, options),
+            class: 'thumbclass'
+          ),
           href: "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/#{blob_csid}/derivatives/OriginalJpeg/content",
           # href: "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/#{blob_csid}/content",
           target: 'original',
           style: 'padding: 3px;',
-          class: 'hrefclass')
+          class: 'hrefclass d-inline-block'
+        )
       end.join.html_safe
     end
+  end
+
+  def render_alt_text(blob_csid, options)
+    document = options[:document]
+    prefix = document[:doctype_s] || 'Document'
+    total_pages = document[:blob_ss] ? document[:blob_ss].length : 1
+    if total_pages > 1
+      page_number = "#{document[:blob_ss].find_index(blob_csid)}".to_i
+      if page_number.to_s.instance_of?(String)
+        if document[:common_doctype_s] == 'document'
+          prefix += ' page '
+        end
+        prefix += "#{page_number + 1} of #{total_pages}"
+      end
+    end
+    document_title = unless document[:doctitle_ss].nil? then "titled #{document[:doctitle_ss][0]}" else 'no title available' end
+    source = unless document[:source_s].nil? then ", source: #{document[:source_s]}" else '' end
+    h("#{prefix} #{document_title}#{source}")
   end
 
   def render_linkless_media options = {}
     # return a list of cards or images
     content_tag(:div) do
       options[:value].collect do |blob_csid|
-        content_tag(:a, content_tag(:img, '',
+        content_tag(:div,
+          content_tag(:img, '',
             src: render_csid(blob_csid, 'Medium'),
-            class: 'thumbclass'),
+            alt: render_alt_text(blob_csid, options),
+            class: 'thumbclass'
+          ),
+          class: 'd-inline-block',
           style: 'padding: 3px;')
       end.join.html_safe
     end
@@ -111,6 +137,7 @@ module ApplicationHelper
           options[:value].collect do |blob_csid|
             content_tag(:img, '',
                 src: render_csid(blob_csid, 'Medium'),
+                alt: render_alt_text(blob_csid, options),
                 class: 'thumbclass')
           end.join.html_safe
         else content_tag(:img, '',

@@ -13,9 +13,13 @@ class CatalogController < ApplicationController
     config.advanced_search[:query_parser] ||= 'edismax'
     config.advanced_search[:form_solr_parameters] ||= {}
 
+    config.index.thumbnail_presenter = ThumbnailPresenter
     config.view.gallery(document_component: Blacklight::Gallery::DocumentComponent)
     config.view.masonry(document_component: Blacklight::Gallery::DocumentComponent)
-    config.view.slideshow(document_component: Blacklight::Gallery::SlideshowComponent)
+    config.view.slideshow(
+      document_component: Blacklight::Gallery::SlideshowComponent,
+      preview_component: Gallery::SlideshowPreviewComponent
+    )
     config.show.tile_source_field = :content_metadata_image_iiif_info_ssm
     config.show.partials.insert(1, :openseadragon)
 
@@ -209,11 +213,11 @@ class CatalogController < ApplicationController
       field.index_range = true
     end
     # config.add_facet_field 'measurement_s', label: 'Dimensions', limit: true
-		config.add_facet_field 'status_s', label: 'Status', limit: true
+    config.add_facet_field 'status_s', label: 'Status', limit: true
     config.add_facet_field 'Has image', query: {
-			has_image: { label: 'Yes', fq: 'blob_ss:[* TO *]' },
-			no_image: { label: 'No', fq: '-(blob_ss:[* TO *])' }
-		}
+      has_image: { label: 'Yes', fq: 'blob_ss:[* TO *]' },
+      no_image: { label: 'No', fq: '-(blob_ss:[* TO *])' }
+    }
 
     # SEARCH FIELDS
     config.add_search_field 'idnumber_s', label: 'Accession Number'
@@ -236,7 +240,7 @@ class CatalogController < ApplicationController
     config.add_show_field 'datesactive_s', label: 'Dates Active'
     config.add_show_field 'measurement_s', label: 'Dimensions'
     config.add_show_field 'materials_s', label: 'Materials'
-	config.add_show_field 'idnumber_s', label: 'Accession Number'
+    config.add_show_field 'idnumber_s', label: 'Accession Number'
     config.add_show_field 'fullbampfacreditline_s', label: 'Full BAMPFA credit line'
     config.add_show_field 'copyrightcredit_s', label: 'Copyright credit'
     config.add_show_field 'century_s', label: 'Century'
