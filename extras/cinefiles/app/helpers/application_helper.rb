@@ -1,12 +1,26 @@
 module ApplicationHelper
 
+  def bookmark_control_label document, counter, total
+    label = "#{document['common_doctype_s'] || 'object'}"
+    if document['common_title_ss']
+      label += " titled #{document['common_title_ss'].join(', ')}"
+    end
+    if counter && counter.to_i > 0
+      label += ". Search result #{counter}"
+      if total && total.to_i > 0
+        label += " of #{total}"
+      end
+    end
+    label.html_safe
+  end
+
   def render_csid csid, derivative
     "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/#{csid}/derivatives/#{derivative}/content"
   end
 
   def render_status options = {}
     options[:value].collect do |status|
-      content_tag(:span, status, style: 'color: red;')
+      content_tag(:span, status, class: 'text-danger')
     end.join(', ').html_safe
   end
 
@@ -101,8 +115,8 @@ module ApplicationHelper
     prefix = document[:doctype_s] || 'Document'
     total_pages = document[:blob_ss] ? document[:blob_ss].length : 1
     if total_pages > 1
-      page_number = "#{document[:blob_ss].find_index(blob_csid)}".to_i
-      if page_number.to_s.instance_of?(String)
+      page_number = document[:blob_ss].find_index(blob_csid)
+      if page_number.is_a? Integer
         if document[:common_doctype_s] == 'document'
           prefix += ' page '
         end
@@ -224,10 +238,12 @@ module ApplicationHelper
         content_tag(:x3d,
           content_tag(:scene,
             content_tag(:inline, '',
-            url: "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/#{x3d_csid}/content",
-            id: 'x3d',
-            type: 'model/x3d+xml')),
-        style: 'margin-bottom: 6px; height: 660px; width: 660px;')
+              url: "https://webapps.cspace.berkeley.edu/cinefiles/imageserver/blobs/#{x3d_csid}/content",
+              id: 'x3d',
+              type: 'model/x3d+xml')),
+          aria: {label: render_alt_text(x3d_csid, options)},
+          role: 'img',
+          class: 'x3d-object')
       end.join.html_safe
     end
   end
@@ -242,10 +258,12 @@ module ApplicationHelper
         content_tag(:x3d,
           content_tag(:scene,
             content_tag(:inline, '',
-            url: "https://cspace-prod-02.ist.berkeley.edu/cinefiles_nuxeo/data/#{l1}/#{l2}/#{x3d_md5}",
-            class: 'x3d',
-            type: 'model/x3d+xml')),
-          style: 'margin-bottom: 6px; height: 660px; width: 660px;')
+              url: "https://cspace-prod-02.ist.berkeley.edu/cinefiles_nuxeo/data/#{l1}/#{l2}/#{x3d_md5}",
+              class: 'x3d',
+              type: 'model/x3d+xml')),
+          aria: {label: render_alt_text(x3d_md5, options)},
+          role: 'img',
+          class: 'x3d-object')
       end.join.html_safe
     end
   end
