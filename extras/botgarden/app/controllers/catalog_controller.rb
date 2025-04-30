@@ -235,13 +235,14 @@ class CatalogController < ApplicationController
     config.add_search_field 'scientificName_s', label: 'scientificName_s'
     config.add_search_field 'specificEpithet_s', label: 'specificEpithet_s'
     config.add_search_field 'determination_s', label: 'determination_s'
+    config.add_search_field 'gardenlocation_s', label: 'gardenlocation_s'
     config.add_search_field 'rare_s', label: 'rare_s'
 
     # 'SHOW' VIEW FIELDS 
     config.add_show_field "collectiondate_s", label: 'collectiondate_s'
     config.add_show_field 'locality_s', label: 'locality_s'
     config.add_show_field 'accessionnumber_s', label: 'accessionnumber_s'
-    config.add_show_field 'gardenlocation', label: 'gardenlocation'
+    config.add_show_field 'gardenlocation_s', label: 'gardenlocation'
     config.add_show_field 'commonname_s', label: 'commonname_s'
     config.add_show_field 'canonicalName_s', label: 'canonicalName_s'
     config.add_show_field 'canonicalNameComplete_s', label: 'canonicalNameComplete_s'
@@ -256,7 +257,7 @@ class CatalogController < ApplicationController
     config.add_show_field 'fruitingverbatim_ss', helper_method: 'render_flower_n_fruit_calendar', label: 'Fruiting Months'
     config.add_show_field 'deadflag_s', label: 'deadflag_s'
     config.add_show_field 'latitude_f', helper_method: 'render_map', label: 'map'
-    config.add_show_field 'blob_ss', helper_method: 'render_media', label: 'Images'
+    # config.add_show_field 'blob_ss', helper_method: 'render_media', label: 'Images'
     # gallery
 
     # 'INDEX' VIEW FIELDS
@@ -272,7 +273,7 @@ class CatalogController < ApplicationController
     config.add_index_field 'rare_s', label: 'rare_s'
     config.add_index_field 'floweringverbatim_ss', helper_method: 'render_flower_n_fruit_calendar', label: 'Flowering Months'
     config.add_index_field 'fruitingverbatim_ss', helper_method: 'render_flower_n_fruit_calendar', label: 'Fruiting Months'
-    config.add_index_field 'blob_ss', helper_method: 'render_media', label: 'Images'
+    # config.add_index_field 'blob_ss', helper_method: 'render_media', label: 'Images'
 
     # sort
     config.index.title_field = 'scientificName_s'

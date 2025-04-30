@@ -1,5 +1,16 @@
 module ApplicationHelper
 
+  def bookmark_control_label document, counter, total
+    label = "#{document['title_s']}, accession number #{document['idnumber_s']}"
+    if counter && counter.to_i > 0
+      label += ". Search result #{counter}"
+      if total && total.to_i > 0
+        label += " of #{total}"
+      end
+    end
+    label.html_safe
+  end
+
   def get_random_documents(query: '*', limit: 12)
     params = {
       :q => query,
@@ -7,15 +18,73 @@ module ApplicationHelper
       :sort => 'random'
     }
     builder = Blacklight::SearchService.new(config: blacklight_config, user_params: params)
+    puts "hello"
+    # builder.blacklight_config['default_solr_params'][:sow] = false
+    # builder.blacklight_config['default_solr_params'][:qf] = "gardenlocation_s"
+    # puts builder.blacklight_config['user_params']
     response = builder.search_results
-    docs = response[0][:response][:docs].collect { |x| x.slice(:objcsid_s,:canonicalNameComplete_s,:commonname_s,:locality_s, :blob_ss)}
-    return docs
+    puts response[0][:response][:docs].length
+    # puts response[0][:response][:docs][0]
+    response[0][:response][:docs].collect { |x| x.slice(:objcsid_s,:canonicalNameComplete_s,:commonname_s,:locality_s, :blob_ss, :gardenlocation_s)}
   end
 
   def generate_image_gallery
-    docs = get_random_documents(query: 'blob_ss:[* TO *]')
-    puts docs
-    return format_image_gallery_results(docs)
+    documents = get_random_documents(query: 'blob_ss:[* TO *]')
+    # puts docs
+    return format_image_gallery_results(documents)
+  end
+
+  def generate_garden_bed_preview(garden_bed)
+    query = "#{garden_bed}"
+    docs = get_random_documents(query: query, limit: 4)
+    docs.collect do |doc|
+      # puts doc
+      content_tag(:a, href: "/catalog/#{doc[:objcsid_s]}") do
+        content_tag(:div, class: 'show-preview-item') do
+          unless doc[:canonicalNameComplete_s].nil?
+          canonical_name = doc[:canonicalNameComplete_s]
+        else
+          canonical_name = "[No name given]"
+        end
+        unless doc[:commonname_s].nil?
+          commonname = doc[:commonname_s]
+          # artist_link = make_artist_search_link(artist)
+          commonname_tag = content_tag(:div, class: "gallery-caption-artist") do
+            "Common Name: ".html_safe +
+            content_tag(:span, commonname)
+          end
+        else
+          commonname_tag = content_tag(:span, "[No common name given]", class: "gallery-caption-artist")
+        end
+        unless doc[:locality_s].nil?
+          country = doc[:locality_s]
+        else
+          country = "[No collection country given]"
+        end
+        unless doc[:blob_ss].nil?
+          image_tag = content_tag(:img, '',
+            src: render_csid(doc[:blob_ss][0], 'Medium'),
+            class: 'thumbclass')
+        else
+          image_tag = content_tag(:span,'Image not available',class: 'no-preview-image')
+        end
+        unless doc[:blob_ss].nil?
+          image_tag = content_tag(:img, '',
+            alt: render_alt_text(doc),
+            src: render_csid(doc[:blob_ss][0], 'Medium'),
+            class: 'thumbclass')
+        else
+          image_tag = content_tag(:span,'Image not available',class: 'no-preview-image')
+        end
+        image_tag + 
+        content_tag(:div) do
+          content_tag(:span, canonical_name, class: "gallery-caption-title") +
+          content_tag(:span, "("+country+")", class: "gallery-caption-date") +
+          commonname_tag
+        end
+        end
+      end
+    end.join.html_safe
   end
 
   def generate_artist_preview(artist)#,limit=4)
@@ -110,6 +179,7 @@ module ApplicationHelper
           country = "[No collection country given]"
         end
         content_tag(:a, content_tag(:img, '',
+          alt: render_alt_text(doc),
           src: render_csid(doc[:blob_ss][0], 'Medium'),
           class: 'thumbclass'),
           href: "/catalog/#{doc[:objcsid_s]}") +
@@ -201,50 +271,14 @@ module ApplicationHelper
     render partial: '/shared/pdfs', locals: { csid: pdf_csid, restricted: restricted }
   end
 
-  def render_media options = {}
-    # return a list of cards or images
-    content_tag(:div) do
-      options[:value].collect do |blob_csid|
-        content_tag(:a, content_tag(:img, '',
-          src: render_csid(blob_csid, 'Medium'),
-          class: 'thumbclass'),
-          href: "https://webapps.cspace.berkeley.edu/botgarden/imageserver/blobs/#{blob_csid}/derivatives/OriginalJpeg/content",
-          # href: "https://webapps.cspace.berkeley.edu/botgarden/imageserver/blobs/#{blob_csid}/content",
-          target: 'original',
-          style: 'padding: 3px;',
-          class: 'hrefclass')
-      end.join.html_safe
-    end
+  def render_alt_text document
+    canonical_name = unless document[:canonicalNameComplete_s].nil? then " #{document[:canonicalNameComplete_s]}" else ' unnamed plant' end
+    common_name = unless document[:commonname_s].nil? then " , with the common name #{document[:commonname_s]}," else '' end
+    object_number = unless document[:accessionnumber_s].nil? then " , accession number #{document[:accessionnumber_s]}" else ' , no accession number available' end
+    "Image of UC Botanical Garden accession, #{canonical_name}#{common_name}#{object_number}.".html_safe
   end
 
-  def render_linkless_media options = {}
-    # return a list of cards or images
-    content_tag(:div) do
-      options[:value].collect do |blob_csid|
-        content_tag(:a, content_tag(:img, '',
-            src: render_csid(blob_csid, 'Medium'),
-            class: 'thumbclass'),
-          style: 'padding: 3px;')
-      end.join.html_safe
-    end
-  end
 
-  def render_restricted_media options = {}
-    # return a list of cards or images
-    content_tag(:div) do
-        if current_user
-          options[:value].collect do |blob_csid|
-            content_tag(:img, '',
-                src: render_csid(blob_csid, 'Medium'),
-                class: 'thumbclass')
-          end.join.html_safe
-        else content_tag(:img, '',
-                src: '../kuchar.jpg',
-                class: 'thumbclass',
-                alt: 'log in to view images')
-        end
-    end
-  end
 
   def determine_month_color(month,field)
     if field.downcase.include? "fruit"

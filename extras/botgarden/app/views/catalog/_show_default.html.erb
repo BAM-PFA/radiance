@@ -10,7 +10,7 @@
           <% document[:blob_ss].each do |image| %>
             <div class="gallery-item">
 
-              <img src="<%= render_csid(image, 'Medium') %>" class="show-image">
+              <img src="<%= render_csid(image, 'Medium') %>" alt="<%= render_alt_text(document) %>" class="show-image">
               </img>
             </div>
 
@@ -36,4 +36,10 @@
     <% end %>
   </div>
 </div>
+
+<% unless document[:gardenlocation_s].nil? %>
+  <section aria-labelledby="show-preview-title" class="row show-preview-container">
+    <%= render :partial => '/catalog/show_preview', :locals => {:garden_location => document[:gardenlocation_s]} %>
+  </section>
+<% end %>
 
