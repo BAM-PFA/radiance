@@ -11,26 +11,129 @@ module ApplicationHelper
     label.html_safe
   end
 
-  def get_random_documents(query: '*', limit: 12)
+  def requery_solr(params,fields_to_export)
+    requery_url, solr_params = format_requery_params(params)
+    filepath = get_paginated_solr_results(requery_url,solr_params,fields_to_export)
+  end
+
+  def format_requery_params(blacklight_q_params)
+    solr_params = {}
+    if blacklight_q_params.key?("search_field")
+      solr_params.merge!({blacklight_q_params["search_field"] => blacklight_q_params["q"]})
+      solr_params.delete("search_field")
+      solr_params.delete("q")
+    end
+    if blacklight_q_params.key?("f")
+      blacklight_q_params['f'].each do |k,v|
+        if v.kind_of?(Array)
+          v = v.join(separator = " ")
+        end
+        solr_params.merge!({k => v})
+      end
+      # puts solr_params.to_json
+      solr_params.delete('f')
+    end
+
+    endpoint_params = ""
+    solr_params.each do |k,v|
+      endpoint_params+="#{k} : #{v} "
+    end
+
+    url_string="https://webapps.cspace.berkeley.edu/solr/botgarden-public/select?defType=edismax&df=text&q.op=AND&q=#{endpoint_params}"
+    
+    return url_string.gsub("'","%22").gsub(" ","%20"), solr_params
+  end
+
+  def get_paginated_solr_results requery_url, solr_params, fields_to_export
+    # TODO this method is too sprawling, refactor
+    require 'uri'
+    require 'net/http'
+    require 'json'
+    require 'thread'
+    require 'securerandom'
+    require 'csv'
+
+    # define the number of results per page returned by solr
+    # this is a guess at a reasonable number without overloading the server? 
+    # it could be too low though, esp for large result sets
+    first_row = JSON.parse(fields_to_export).map { |value| "" }
+    first_row = first_row.unshift(solr_params)
+    headers = JSON.parse(fields_to_export)
+    headers = headers.unshift("Query parameters")
+
+    results_per_page = 500
+    requery_url_string = "#{requery_url}&rows=#{results_per_page}"
+    response = get_single_solr_page(requery_url_string,0)
+    
+    total_items = response['response']['numFound'].to_i
+    number_of_full_pages, last_page_num_items = total_items.divmod(results_per_page)
+    starting_row = 0
+    last_page = number_of_full_pages + 1
+    last_page_start_row = (number_of_full_pages*results_per_page)
+    last_row = total_items - 1
+
+    uuid = SecureRandom.uuid[0..7]
+    filepath = "public/query_results_#{uuid}.csv"
+
+    page_queue = Queue.new
+    (0..last_page_start_row).step(results_per_page) do |start_row|
+      page_queue << start_row
+    end
+
+   
+    CSV.open(filepath, "a") do |csv|
+      csv << headers
+      csv << first_row
+
+      workers = last_page.times.map do
+        Thread.new do
+          until page_queue.empty?
+            start_row = page_queue.pop(true) rescue nil
+            if start_row
+              response = get_single_solr_page(requery_url_string,start_row)
+              response['response']['docs'].each do |row|
+                # account for the column for search params
+                row_to_enter = [""]
+                JSON.parse(fields_to_export).each do |field|
+                  row_to_enter << row[field]
+                end
+                csv << row_to_enter
+              end
+            end
+          end
+        end
+      end
+      workers.each(&:join)
+    end
+
+    return filepath
+  end
+
+  def get_single_solr_page requery_url_string,start_row
+    requery_url_string = "#{requery_url_string}&start=#{start_row}"
+    requery_url = URI(requery_url_string)
+    res = Net::HTTP.get_response(requery_url)
+    if res.is_a?(Net::HTTPSuccess) 
+      response = JSON.parse(res.body)
+      return response
+    else
+      return ""
+    end
+  end
+
+  def get_random_documents(query: '*', limit: 12, sort: 'random')
     params = {
       :q => query,
       :rows => limit,
-      :sort => 'random'
+      :sort => sort
     }
     builder = Blacklight::SearchService.new(config: blacklight_config, user_params: params)
-    puts "hello"
-    # builder.blacklight_config['default_solr_params'][:sow] = false
-    # builder.blacklight_config['default_solr_params'][:qf] = "gardenlocation_s"
-    # puts builder.blacklight_config['user_params']
     response = builder.search_results
-    puts response[0][:response][:docs].length
-    # puts response[0][:response][:docs][0]
     response[0][:response][:docs].collect { |x| x.slice(:objcsid_s,:canonicalNameComplete_s,:commonname_s,:locality_s, :blob_ss, :gardenlocation_s)}
   end
 
   def generate_image_gallery
     documents = get_random_documents(query: 'blob_ss:[* TO *]')
-    # puts docs
     return format_image_gallery_results(documents)
   end
 
@@ -38,7 +141,6 @@ module ApplicationHelper
     query = "#{garden_bed}"
     docs = get_random_documents(query: query, limit: 4)
     docs.collect do |doc|
-      # puts doc
       content_tag(:a, href: "/catalog/#{doc[:objcsid_s]}") do
         content_tag(:div, class: 'show-preview-item') do
           unless doc[:canonicalNameComplete_s].nil?
@@ -48,7 +150,6 @@ module ApplicationHelper
         end
         unless doc[:commonname_s].nil?
           commonname = doc[:commonname_s]
-          # artist_link = make_artist_search_link(artist)
           commonname_tag = content_tag(:div, class: "gallery-caption-artist") do
             "Common Name: ".html_safe +
             content_tag(:span, commonname)
@@ -194,7 +295,7 @@ module ApplicationHelper
 
   def render_map options = {}
     document = options.to_json
-    puts document
+    # puts document
     render partial: "/map/map", locals: { latitude: options[:document][:latitude_f], longitude: options[:document][:longitude_f] }
   end
 

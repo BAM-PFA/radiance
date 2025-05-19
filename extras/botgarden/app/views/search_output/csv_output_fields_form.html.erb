@@ -1,0 +1,31 @@
+<div class="container-fluid">  
+  <%= form_with url: "/download_csv", name: "download-csv-form", method: :post do |form| %>
+    <%= form.label "Select fields to include as columns in the output CSV file:", { class: "form-label"} %>
+    <%= hidden_field_tag :solr_params, params[:solr_params]   %>
+    <%# This is where the fields that can be included in the search results csv are declared; should prob be in config? %>
+    <% all_fields = [
+      "objcsid_s",
+      "canonicalNameComplete_s",
+      "gardenlocation_s",
+      "accessionnumber_s",
+      "deaddate_s",
+      "family_s",
+      "genusOrAbove_s",
+      "locality_s",
+      "provenancetype_s",
+      "accessrestrictions_s",
+      "accessionnotes_s",
+      "source_s",
+      "hybridflag_s",
+      "vouchers_s"
+      ] %>
+    <% all_fields.each do |field| %>
+    <div class="form-check">
+      <%= form.check_box "#{field}", { class: "form-check-input", type: "checkbox", data: {"search_csv_form-target" => "csvField"}} %>
+      <%= form.label "#{field}", "#{field}", { class: "form-check-label"} %>
+    </div>
+    <% end %>
+    <%= form.submit "Create search results CSV", { class: "btn btn-primary" } %>
+  <% end %>
+</div>
+
