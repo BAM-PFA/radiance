@@ -12,12 +12,12 @@
   color: black;
   font-weight: bold;
   text-decoration: none;
-  &:hover {
+  &:hover:not([aria-disabled]) {
     text-decoration: underline;
   }
 }
 .site-footer p {
-  line-height: 1.2;
+  line-height: 1.5;
 }
 .site-footer ul li:not(.social) {
   max-width: 12em;

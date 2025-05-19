@@ -1,0 +1,4 @@
+<% if !request.xhr? %>
+  <h1 class="mb-4"><%= facet_field.label %></h1>
+<% end %>
+<%= render BlacklightRangeLimit::RangeSegmentsComponent.new(facet_field: facet_field) %>
