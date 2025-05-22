@@ -4,34 +4,40 @@ class SearchOutputController < ApplicationController
 	include ApplicationHelper
 	include ActionController::MimeResponds
 
+	# hash of solr_label => display label values for CSV export
+	config.csv_output_fields = {
+	  "objcsid_s" => "Object CSID",
+	  "canonicalNameComplete_s" => "Canonical Name",
+	  "gardenlocation_s" => "Garden Location",
+	  "accessionnumber_s" => "Accession Number",
+	  "deaddate_s" => "Dead Date",
+	  "family_s" => "Taxonomic Family",
+	  "genusOrAbove_s" => "Genus Or Above",
+	  "locality_s" => "Collecting Locality",
+	  "provenancetype_s" => "Provenance Type",
+	  "accessrestrictions_s" => "Access Restrictions",
+	  "accessionnotes_s" => "Accession Notes",
+	  "source_s" => "Source",
+	  "hybridflag_s" => "Hybrid?",
+	  "rare_s" => "Rare?",
+	  "vouchers_s" => "Has Vouchers?"
+	  }
+
 	def csv_output_fields_form
-		# puts params[:solr_params]
-		# search_data = generate_search_results_data(solr_query)
 		respond_to do |format|
 		    format.html
-			format.json
-		    format.js
+			# format.json
+		    # format.js
 		end
 	end
-
-	# def has_values fields_to_query
-	# 	has_values = fields_to_query.select(&:presence)
-	# 	if has_values.blank?
-	# 		return false    
-	# 	end
-	# end
-
 
 	def download_csv
 		fields_to_query = []
 		params.except(:authenticity_token,:commit,:controller,:solr_params,:action,:authenticity_token).each do |field,value|
-			# puts field, value
 			if value.to_s == "1"
 				fields_to_query << field
 			end
 		end
-		puts "hello "*100
-		# puts JSON.parse(params[:solr_params])
 
 		send_file(view_context.requery_solr(
 			JSON.parse(params[:solr_params]),

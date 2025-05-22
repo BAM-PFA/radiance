@@ -1,7 +1,7 @@
 module ApplicationHelper
 
   def bookmark_control_label document, counter, total
-    label = "#{document['title_s']}, accession number #{document['idnumber_s']}"
+    label = "#{document['canonicalNameComplete_s']}, accession number #{document['accessionnumber_s']}"
     if counter && counter.to_i > 0
       label += ". Search result #{counter}"
       if total && total.to_i > 0
@@ -17,12 +17,30 @@ module ApplicationHelper
   end
 
   def format_requery_params(blacklight_q_params)
+    # puts "hello "*100
+    # puts blacklight_q_params
     solr_params = {}
     if blacklight_q_params.key?("search_field")
-      solr_params.merge!({blacklight_q_params["search_field"] => blacklight_q_params["q"]})
+      if blacklight_q_params["search_field"] == "advanced"
+        blacklight_q_params.except("f","search_field").each do |k,v|
+          solr_params.merge!({k => v})
+        end
+      end
+      # puts blacklight_q_params["search_field"], blacklight_q_params["q"] 
+      # if blacklight_q_params["search_field"].kind_of? Hash || blacklight_q_params["search_field"] == "text"
+      solr_params[blacklight_q_params["search_field"]] = blacklight_q_params["q"]
       solr_params.delete("search_field")
       solr_params.delete("q")
+      # end
     end
+
+    if blacklight_q_params.key?("range")
+      blacklight_q_params['range'].each do |k,v|
+        value="[#{v['begin']} TO #{v['end']}]"
+        solr_params.merge!({k => value})
+      end
+    end
+
     if blacklight_q_params.key?("f")
       blacklight_q_params['f'].each do |k,v|
         if v.kind_of?(Array)
@@ -30,7 +48,6 @@ module ApplicationHelper
         end
         solr_params.merge!({k => v})
       end
-      # puts solr_params.to_json
       solr_params.delete('f')
     end
 
@@ -38,10 +55,10 @@ module ApplicationHelper
     solr_params.each do |k,v|
       endpoint_params+="#{k} : #{v} "
     end
-
-    url_string="https://webapps.cspace.berkeley.edu/solr/botgarden-public/select?defType=edismax&df=text&q.op=AND&q=#{endpoint_params}"
+    url_string = "https://webapps.cspace.berkeley.edu/solr/botgarden-public/select?defType=edismax&df=text&q.op=AND&q=#{endpoint_params}"
+    url_string = url_string.gsub("'","%22").gsub(" ","%20")
     
-    return url_string.gsub("'","%22").gsub(" ","%20"), solr_params
+    return url_string, solr_params
   end
 
   def get_paginated_solr_results requery_url, solr_params, fields_to_export
@@ -58,9 +75,13 @@ module ApplicationHelper
     # it could be too low though, esp for large result sets
     first_row = JSON.parse(fields_to_export).map { |value| "" }
     first_row = first_row.unshift(solr_params)
-    headers = JSON.parse(fields_to_export)
-    headers = headers.unshift("Query parameters")
+    headers = []
 
+    # headers = JSON.parse(fields_to_export)
+    headers = headers.unshift("Query parameters")
+    JSON.parse(fields_to_export).each do |f|
+      headers << config.csv_output_fields[f]
+    end
     results_per_page = 500
     requery_url_string = "#{requery_url}&rows=#{results_per_page}"
     response = get_single_solr_page(requery_url_string,0)
