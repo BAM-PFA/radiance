@@ -20,7 +20,8 @@ class SearchOutputController < ApplicationController
 	  "source_s" => "Source",
 	  "hybridflag_s" => "Hybrid?",
 	  "rare_s" => "Rare?",
-	  "vouchers_s" => "Has Vouchers?"
+	  "vouchers_s" => "Has Vouchers?",
+	  "blob_ss" => "Has Images?"
 	  }
 
 	def csv_output_fields_form
@@ -38,6 +39,7 @@ class SearchOutputController < ApplicationController
 				fields_to_query << field
 			end
 		end
+		puts params
 
 		send_file(view_context.requery_solr(
 			JSON.parse(params[:solr_params]),

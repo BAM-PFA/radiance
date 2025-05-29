@@ -24,6 +24,7 @@ module ApplicationHelper
       if blacklight_q_params["search_field"] == "advanced"
         blacklight_q_params.except("f","search_field").each do |k,v|
           solr_params.merge!({k => v})
+          solr_params&.delete("advanced")
         end
       end
       # puts blacklight_q_params["search_field"], blacklight_q_params["q"] 
@@ -42,7 +43,27 @@ module ApplicationHelper
     end
 
     if blacklight_q_params.key?("f")
-      blacklight_q_params['f'].each do |k,v|
+      puts blacklight_q_params['f']
+      if blacklight_q_params['f'].key?("Has image")
+        
+        if blacklight_q_params['f']["Has image"][0] == "has_image"
+          solr_params.merge!({"blob_ss" => "[* TO *]"})
+        elsif blacklight_q_params['f']["Has image"][0] == "no_image"
+          solr_params.merge!({"-(blob_ss" => "[* TO *])"})
+        end
+        blacklight_q_params['f'] = blacklight_q_params['f'].delete("Has Image")
+
+
+        # if blacklight_q_params['f']["Has image"][0] == "no_image"
+        # end
+
+
+
+        # solr_params.merge!({"blob_ss" => "[* TO *]"})
+        # blacklight_q_params['f'] = blacklight_q_params['f'].delete("Has Image")
+      end
+      puts solr_params
+      blacklight_q_params['f']&.each do |k,v|
         if v.kind_of?(Array)
           v = v.join(separator = " ")
         end
@@ -50,6 +71,9 @@ module ApplicationHelper
       end
       solr_params.delete('f')
     end
+    solr_params&.delete("advanced")
+    puts solr_params
+
 
     endpoint_params = ""
     solr_params.each do |k,v|
@@ -57,6 +81,7 @@ module ApplicationHelper
     end
     url_string = "https://webapps.cspace.berkeley.edu/solr/botgarden-public/select?defType=edismax&df=text&q.op=AND&q=#{endpoint_params}"
     url_string = url_string.gsub("'","%22").gsub(" ","%20")
+    puts url_string
     
     return url_string, solr_params
   end

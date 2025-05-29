@@ -227,7 +227,7 @@ class CatalogController < ApplicationController
     # SEARCH FIELDS
     config.add_search_field 'collectiondate_s', label: 'collectiondate_s'
     config.add_search_field 'family_s', label: 'family_s'
-    config.add_search_field 'collcountry_ss', label: 'collcountry_ss'
+    config.add_search_field 'collcountry_txt', label: 'collcountry_txt'
     config.add_search_field 'accessionnumber_s', label: 'accessionnumber_s'
     config.add_search_field 'commonname_s', label: 'commonname_s'
     config.add_search_field 'canonicalName_s', label: 'canonicalName_s'
