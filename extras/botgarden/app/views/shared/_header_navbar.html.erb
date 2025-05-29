@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-md navbar-light topbar" role="navigation">
     <div class="justify-content-md-start">
       <h4>
-        <a href="/" alt="uc botanical garden portal homepage"><img wdith="80%" src="botgarden-logo.svg" alt="uc botanical garden logo"></a>
+        <a href="/" alt="uc botanical garden portal homepage"><img wdith="80%" src="/botgarden-logo.svg" alt="uc botanical garden logo"></a>
       </h4>
     </div>
     <div class="collapse navbar-collapse justify-content-md-end" id="user-util-collapse">
@@ -9,7 +9,7 @@
     </div>
 </nav>
 
-<%= content_tag :div, class: 'navbar navbar-search bg-light mb-1', role: 'navigation', aria: { label: t('blacklight.search.header') } do %>
+<%= content_tag :div, class: 'navbar navbar-search bg-light mb-3', role: 'navigation', aria: { label: t('blacklight.search.header') } do %>
   <div class="<%= container_classes %>">
     <%= render((blacklight_config&.view_config(document_index_view_type)&.search_bar_component ||Blacklight::SearchBarComponent).new(
           url: search_action_url,

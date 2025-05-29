@@ -46,6 +46,10 @@ ul.footer {
   background-color: lightgray;
 }
 
+.advanced_search {
+  color: black;
+}
+
 // SPLASH DISPLAY
 
 .bampfa-splash {
@@ -129,10 +133,9 @@ h4.facets-heading {
   font-size: 1rem;
 }
 
-.search_field {
-  font-family: Roboto, Helvetica, Arial, sans-serif;
-  font-weight: normal;
-  font-size: 14px;
+#search_field {
+  color: black;
+  opacity: 1;
 }
 
 h3.index_title > a {
@@ -184,10 +187,20 @@ h3.index_title > a {
   color: black;
 }
 
-.facet_limit-active {
-  color: #212121;
-  background-color: #fab946;
-  border-color: #e6fdfe;
+.facet-limit-active {
+  color: white;
+  /*background-color: #fab946;*/
+  border-color: rgb(129, 132, 31);
+}
+
+.facet-limit-active .btn {
+  color: black;
+
+  background-color: rgb(171, 173, 68);
+}
+
+#main-container  .btn-outline-secondary {
+  color: black;
 }
 
 // IMAGE GALLERY STUFF
