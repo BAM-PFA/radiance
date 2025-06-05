@@ -1,0 +1,36 @@
+<div class="container-fluid">  
+  <%= form_with url: "/make_summary",  name: "download-summary-form", method: :post do |form| %>
+  <div class="row mt-3">
+    <%= form.label "Select a field to sumamrize on and which fields to display", { class: "form-label"} %>
+    <%= hidden_field_tag :solr_params, params[:solr_params]   %>
+  </div>
+  <div class="row mt-2 mb-4 border">
+    <!-- The fields to export are added to the application config in search_output_controller.rb -->
+    <div class="row m-3">
+      <div class="form-group">
+        <label class="invisible" for="summary-field">Select a field to summarize on</label>
+        <%= form.select :summary_field, config.csv_output_fields.collect {|field,label| [ label,field ] }, html: { class: "form-control" }, id: "summary-field", name: "summary-field", prompt:"Select a field to summarize on"  %>
+      </div>
+    </div>
+      <div class="row m-3">
+        <div class="card">
+          <div class="card-body">
+          <h2 class="card-title m-3">Select which fields to include in the summary</h2>
+            <% config.csv_output_fields.each do |field,label| %>
+              <div class="col-auto m-2">
+                  <div class="form-check">
+                    <%= form.check_box "#{field}", { class: "form-check-input", type: "checkbox"} %>
+                    <%= form.label "#{label}", "#{label}", { class: "form-check-label"} %>
+                  </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <div class="row">
+    <%= form.submit "Create a summary", { class: "btn btn-primary" } %>
+  </div>
+  <% end %>
+</div>
+
