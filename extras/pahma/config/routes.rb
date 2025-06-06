@@ -25,6 +25,13 @@ Rails.application.routes.draw do
 
   get '/*ark_tag/:naan/:ark' => 'catalog#decode_ark', constraints: { ark_tag:'ark:' }
   get '/add_gallery_items' => "gallery#add_gallery_items"
+  
+
+  get "/csv_output_fields_form", to: "search_output#csv_output_fields_form", as: "csv_output_fields_form"
+  get "/summary_fields_form", to: "search_output#summary_fields_form", as: "summary_fields_form"
+  post "/download_csv", to: "search_output#download_csv"
+  post "/make_summary", to: "search_output#make_summary"
+  get "/download_summary", to: "search_output#download_summary"
 
   resources :bookmarks do
     concerns :exportable

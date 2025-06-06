@@ -1,0 +1,23 @@
+<div class="container-fluid">  
+  <%= form_with url: "/download_csv",  name: "download-csv-form", method: :post do |form| %>
+  <div class="row mt-3">
+    <%= form.label "Select fields to include as columns in the output CSV file:", { class: "form-label"} %>
+    <%= hidden_field_tag :solr_params, params[:solr_params]   %>
+  </div>
+  <div class="row mt-2 mb-4 border">
+    <!-- The fields to export are added to the application config in search_output_controller.rb -->
+    <% config.csv_output_fields.each do |field,label| %>
+      <div class="col-auto m-2">
+          <div class="form-check">
+            <%= form.check_box "#{field}", { class: "form-check-input", type: "checkbox"} %>
+            <%= form.label "#{label}", "#{label}", { class: "form-check-label"} %>
+          </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="row">
+    <%= form.submit "Create search results CSV", { class: "btn btn-primary" } %>
+  </div>
+  <% end %>
+</div>
+

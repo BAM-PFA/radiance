@@ -1,0 +1,42 @@
+<% @page_title = t('blacklight.search.page_title.title', constraints: render_search_to_page_title(params), application_name: application_name) %>
+
+<% content_for(:head) do -%>
+  <%= render 'catalog/opensearch_response_metadata', response: @response %>
+  <%= rss_feed_link_tag %>
+  <%= atom_feed_link_tag %>
+  <%= json_api_link_tag %>
+<% end %>
+
+<% content_for(:skip_links) do -%>
+    <%= link_to t('blacklight.skip_links.first_result'), '#documents', class: 'element-invisible element-focusable rounded-bottom py-2 px-3', data: { turbolinks: 'false' } %>
+<% end %>
+
+<% content_for(:container_header) do -%>
+  <%= render 'search_results_header' %>
+  <%= render 'constraints' %>
+<% end %>
+
+<%= render 'search_header' %>
+
+<h2 class="sr-only visually-hidden"><%= t('blacklight.search.search_results') %></h2>
+
+<%- if @response.empty? %>
+  <%= render "zero_results" %>
+<%- elsif render_grouped_response? %>
+  <%= Deprecation.silence(Blacklight::RenderPartialsHelperBehavior) { render_grouped_document_index } %>
+<%- else %>
+  <div class="row">
+    <div class="col-sm-6">
+      <%= link_to "Download these search results", csv_output_fields_form_path(solr_params: params.compact_blank.except(:op,:sort,:commit,:controller,:action,:authenticity_token,:solr_params).to_json, no_vaules: nil), class: 'btn btn-primary' %>
+    </div>
+    <%=  %>
+    <% if @response["response"]["numFound"] < 100000 %>
+      <div class="col-sm-6">
+        <%= link_to "Summarize these search results", summary_fields_form_path(solr_params: params.compact_blank.except(:op,:sort,:commit,:controller,:action,:authenticity_token,:solr_params).to_json, summary_field: params[:summary_field], fields_to_export: params[:fields_to_export],summary_database_path: params[:summary_database_path], no_vaules: nil), class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+  <%= render_document_index @response.documents %>
+<%- end %>
+
+<%= render 'results_pagination' %>

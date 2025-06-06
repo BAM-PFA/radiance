@@ -11,6 +11,318 @@ module ApplicationHelper
     label.html_safe
   end
 
+  def requery_solr(params,fields_to_export)
+    requery_url, solr_params = format_requery_params(params)
+    filepath = get_paginated_solr_results(requery_url,solr_params,fields_to_export)
+  end
+
+  def requery_solr_summarize(params,fields_to_export,summary_field)
+    requery_url, solr_params = format_requery_params(params)
+    summary_field, fields_to_export, summary_database_path = get_paginated_solr_results(requery_url,solr_params,fields_to_export,summary_field=summary_field)
+    return summary_field, fields_to_export, summary_database_path
+  end
+
+  def format_requery_params(blacklight_q_params)
+    # puts "hello "*100
+    # puts blacklight_q_params
+    solr_params = {}
+    if blacklight_q_params.key?("search_field")
+      if blacklight_q_params["search_field"] == "advanced"
+        blacklight_q_params.except("f","search_field").each do |k,v|
+          solr_params.merge!({k => "'#{v}'"})
+          solr_params&.delete("advanced")
+        end
+      end
+      # puts blacklight_q_params["search_field"], blacklight_q_params["q"] 
+      # if blacklight_q_params["search_field"].kind_of? Hash || blacklight_q_params["search_field"] == "text"
+      solr_params[blacklight_q_params["search_field"]] = blacklight_q_params["q"]
+      solr_params.delete("search_field")
+      solr_params.delete("q")
+      # end
+    end
+
+    if blacklight_q_params.key?("range")
+      blacklight_q_params['range'].each do |k,v|
+        value="[#{v['begin']} TO #{v['end']}]"
+        solr_params.merge!({k => value})
+      end
+    end
+
+    if blacklight_q_params.key?("f")
+      puts blacklight_q_params['f']
+      if blacklight_q_params['f'].key?("Has image")
+        
+        if blacklight_q_params['f']["Has image"][0] == "has_image"
+          solr_params.merge!({"blob_ss" => "[* TO *]"})
+        elsif blacklight_q_params['f']["Has image"][0] == "no_image"
+          solr_params.merge!({"-(blob_ss" => "[* TO *])"})
+        end
+        blacklight_q_params['f'] = blacklight_q_params['f'].delete("Has Image")
+
+      end
+      puts solr_params
+      blacklight_q_params['f']&.each do |k,v|
+        if v.kind_of?(Array)
+          v = v.join(separator = " ")
+        end
+        solr_params.merge!({k => "'#{v}'"})
+      end
+      solr_params.delete('f')
+    end
+    solr_params&.delete("advanced")
+    puts solr_params
+
+
+    endpoint_params = ""
+    solr_params.each do |k,v|
+      endpoint_params+="#{k} : #{v} "
+    end
+    url_string = "https://webapps.cspace.berkeley.edu/solr/pahma-public/select?defType=edismax&df=text&q.op=AND&q=#{endpoint_params}"
+    url_string = url_string.gsub("'","%22").gsub(" ","%20")
+    puts url_string
+    
+    return url_string, solr_params
+  end
+
+  def get_paginated_solr_results requery_url, solr_params, fields_to_export, summary_field=nil
+    # TODO this method is crazy sprawling, refactor & DRY
+    require 'uri'
+    require 'net/http'
+    require 'json'
+    require 'thread'
+    require 'securerandom'
+    require 'csv'
+
+
+    fields_to_export = JSON.parse(fields_to_export)
+    first_row = fields_to_export.map { |value| "" }
+    first_row = first_row.unshift(solr_params)
+    headers = []
+
+    # headers = fields_to_export
+    headers = headers.unshift("Query parameters")
+    fields_to_export.each do |f|
+      headers << config.csv_output_fields[f]
+    end
+
+    # define the number of results per page returned by solr
+    # this is a guess at a reasonable number without overloading the server? 
+    # it could be too low though, esp for large result sets
+    results_per_page = 10000
+    requery_url_string = "#{requery_url}&rows=#{results_per_page}"
+    puts requery_url_string
+    response = get_single_solr_page(requery_url_string,0)
+    
+    total_items = response['response']['numFound'].to_i
+    number_of_full_pages, last_page_num_items = total_items.divmod(results_per_page)
+    starting_row = 0
+    last_page = number_of_full_pages + 1
+    last_page_start_row = (number_of_full_pages*results_per_page)
+    last_row = total_items - 1
+
+    uuid = SecureRandom.uuid[0..7]
+
+    page_queue = Queue.new
+    (0..last_page_start_row).step(results_per_page) do |start_row|
+      page_queue << start_row
+    end
+
+    if summary_field != nil
+      summary_database, summary_database_path = create_summary_db(fields_to_export,summary_field,uuid)
+      # puts fields_to_export.insert(0,"count")
+      columns = "#{summary_field}_summary, #{fields_to_export.insert(0,"count").join(", ")}"
+      # puts columns
+      # number of columns doesn't include the "count" column
+      number_of_columns = fields_to_export.length()
+      parameterized_values = "?"
+      number_of_columns.times { parameterized_values += ", ?" }
+      
+      workers = last_page.times.map do
+        Thread.new do
+          until page_queue.empty?
+            start_row = page_queue.pop(true) rescue nil
+            if start_row
+              response = get_single_solr_page(requery_url_string,start_row)
+              response['response']['docs']&.each do |row|
+                if row[summary_field].nil?
+                    row[summary_field] = ""
+                  end
+                if row[summary_field].is_a?(Array)
+                  values = [row[summary_field].join(separator = " > ")]
+                else
+                  values = [row[summary_field]]
+                end
+                # puts values.to_s
+                fields_to_export.each do |column|
+                  # puts column
+                  # puts row[column].class
+                  # puts row[column].to_s
+
+
+                  if row[column].is_a?(Array)
+                    # puts row[column].join(separator = " > ")
+                    values << row[column].join(separator = " | ")
+                  else
+                    values << row[column]
+                  end
+                end
+                puts values.to_s
+
+                insert_string = "INSERT INTO summary (#{columns}) VALUES (#{parameterized_values});"
+                puts insert_string
+                summary_database.execute insert_string, values
+
+              end
+            end
+          end
+        end
+      end
+      workers.each(&:join)
+
+      return summary_field, fields_to_export, summary_database_path
+
+    end
+
+   
+    uuid = SecureRandom.uuid[0..7]
+    results_filepath = "public/query_results_#{uuid}.csv"
+
+    CSV.open(results_filepath, "a") do |csv|
+      csv << headers
+      csv << first_row
+
+      workers = last_page.times.map do
+        Thread.new do
+          until page_queue.empty?
+            start_row = page_queue.pop(true) rescue nil
+            if start_row
+              response = get_single_solr_page(requery_url_string,start_row)
+              response['response']['docs'].each do |row|
+                # account for the column for search params
+                row_to_enter = [""]
+                fields_to_export.each do |field|
+                  row_to_enter << row[field]
+                end
+                csv << row_to_enter
+              end
+            end
+          end
+        end
+      end
+      workers.each(&:join)
+    end
+
+    return results_filepath
+  end
+
+  def make_stats summary_field,fields_to_export,summary_database_path, download=false
+    require 'securerandom'
+    require 'time'
+
+    summary_database = SQLite3::Database.open(summary_database_path)
+    uuid = SecureRandom.uuid[0..7]
+    stats_csv_filepath = "public/stats_#{Time.current.localtime.strftime("%Y-%m-%d_%H-%M-%S")}.csv"
+    if download == false
+      limit = "LIMIT 500"
+    elsif download == true
+      limit = ""
+    end
+    
+    count_string = "SELECT #{summary_field}_summary AS 'Summarizing on #{config.csv_output_fields[summary_field]}', COUNT(#{summary_field}_summary) AS 'Count'"
+    fields_to_export.delete('count')
+    # puts fields_to_export
+    fields_to_export.each {|column| count_string += ", GROUP_CONCAT(DISTINCT #{column}) AS '#{config.csv_output_fields[column]}'" }
+    count_string += " FROM summary GROUP BY #{summary_field}_summary ORDER BY Count DESC #{limit};"
+    # puts count_string
+    results = summary_database.query(count_string)
+    # puts results[-1].to_s
+    # puts results.columns
+    # results.unshift(summary_database)
+
+    if download == false
+
+
+      thead = content_tag :thead do
+        content_tag :tr do
+          results.columns.collect {|column| 
+            concat content_tag(:th,column)
+          }.join().html_safe
+        end
+      end
+
+      tbody = content_tag :tbody do
+        results.collect { |row|
+
+          content_tag :tr do
+            row.collect { |value|
+                concat content_tag(:td, value.to_s.gsub(/([a-zA-Z0-9\.\']+?)(,)([a-zA-Z0-9]+?)/, '\1<br/>\3').html_safe, html: {class: "m-2"})
+            }.to_s.html_safe
+          end
+
+        }.join().html_safe
+      end
+
+      table = content_tag(:table, class:"table table-responsive table-bordered") do 
+        thead.concat(tbody)
+      end
+
+    elsif download == true
+      headers = []
+      fields_to_export.each do |column|
+        headers << config.csv_output_fields[column]
+      end
+
+      headers[0] = "Summarizing on #{config.csv_output_fields[summary_field]}"
+
+      CSV.open(stats_csv_filepath, "a") do |csv|
+        csv << headers
+        # csv << first_row
+        results.each do |row|
+          csv << row
+        end
+      end
+      return stats_csv_filepath
+    end
+
+  end
+
+  def total_stats_item_count summary_database_path
+    summary_database = SQLite3::Database.open(summary_database_path)
+    total_count = summary_database.query("SELECT COUNT(*) from summary").next()[0]
+
+  end
+
+  def create_summary_db fields_to_export,summary_field,uuid
+    require 'sqlite3'
+    require 'fileutils'
+    db_path = "public/summary_#{uuid}.db"
+    FileUtils.touch(db_path)
+    db = SQLite3::Database.open(db_path)
+    fields_columns = ""
+    fields_to_export&.each do |field|
+      fields_columns += ", #{field} TEXT"
+    end
+
+    sql_create_statement = "CREATE TABLE summary(#{summary_field}_summary TEXT DEFAULT '', count INTEGER DEFAULT 0#{fields_columns})"
+    puts sql_create_statement
+    db.execute sql_create_statement
+
+    return db,db_path
+
+  end
+
+  def get_single_solr_page requery_url_string,start_row
+    requery_url_string = "#{requery_url_string}&start=#{start_row}"
+    requery_url = URI(requery_url_string)
+    res = Net::HTTP.get_response(requery_url)
+    if res.is_a?(Net::HTTPSuccess) 
+      response = JSON.parse(res.body)
+      return response
+    else
+      return ""
+    end
+  end
+
   def render_csid csid, derivative
     "https://webapps.cspace.berkeley.edu/pahma/imageserver/blobs/#{csid}/derivatives/#{derivative}/content"
   end

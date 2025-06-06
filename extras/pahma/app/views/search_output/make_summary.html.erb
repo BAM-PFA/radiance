@@ -1,0 +1,19 @@
+<div class="row">
+	<div class="col m-3">
+		<div class="row my-2">
+			<div class="col-sm-6">
+				<span class="primary">
+					<%= total_stats_item_count(params[:summary_database_path]) %> items are summarized here. This table is limited to the first 500 lines. For the full result set, you can download a CSV file:
+				</span>
+			</div>
+			<div class="col-sm-6 my-2">
+				<%= link_to "Download summary CSV", download_summary_path(summary_field: params[:summary_field],fields_to_export: params[:fields_to_export],summary_database_path: params[:summary_database_path]), class: "btn btn-primary" %>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col m-3">
+		<%= make_stats(params[:summary_field],params[:fields_to_export],params[:summary_database_path]) %>
+	</div>
+</div>
