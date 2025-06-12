@@ -30,7 +30,7 @@
       <%= link_to "Download these search results", csv_output_fields_form_path(solr_params: params.compact_blank.except(:op,:sort,:commit,:controller,:action,:authenticity_token,:solr_params).to_json, no_vaules: nil), class: 'btn btn-primary' %>
     </div>
     <div class="col-sm-6">
-      <%= link_to "Summarize these search results", make_summary_path(solr_params: params.compact_blank.except(:op,:sort,:commit,:controller,:action,:authenticity_token,:solr_params).to_json, no_vaules: nil), class: 'btn btn-primary' %>
+      <%= link_to "Summarize these search results", summary_fields_form_path(solr_params: params.compact_blank.except(:op,:sort,:commit,:controller,:action,:authenticity_token,:solr_params).to_json, no_vaules: nil), class: 'btn btn-primary' %>
     </div>
   </div>
   <%= render_document_index @response.documents %>
