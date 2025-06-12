@@ -11,15 +11,23 @@ module ApplicationHelper
     label.html_safe
   end
 
-  def requery_solr(params,fields_to_export)
+  # TODO: DRY
+  def requery_solr(params,fields_to_export,summary_field=nil,map=nil)
     requery_url, solr_params = format_requery_params(params)
     filepath = get_paginated_solr_results(requery_url,solr_params,fields_to_export)
   end
 
-  def requery_solr_summarize(params,fields_to_export,summary_field)
+  def requery_solr_summarize(params,fields_to_export,summary_field,map=nil)
     requery_url, solr_params = format_requery_params(params)
     summary_field, fields_to_export, summary_database_path = get_paginated_solr_results(requery_url,solr_params,fields_to_export,summary_field=summary_field)
     return summary_field, fields_to_export, summary_database_path
+  end
+
+  def requery_solr_map(params,fields_to_export=nil,summary_field=nil,map=true)
+    puts fields_to_export.class
+    requery_url, solr_params = format_requery_params(params)
+    map_tsv_path = get_paginated_solr_results(requery_url,solr_params,fields_to_export,summary_field,map)
+    return map_tsv_path
   end
 
   def format_requery_params(blacklight_q_params)
@@ -70,7 +78,7 @@ module ApplicationHelper
       solr_params.delete('f')
     end
     solr_params&.delete("advanced")
-    puts solr_params
+    # puts solr_params
 
 
     endpoint_params = ""
@@ -84,7 +92,7 @@ module ApplicationHelper
     return url_string, solr_params
   end
 
-  def get_paginated_solr_results requery_url, solr_params, fields_to_export, summary_field=nil
+  def get_paginated_solr_results requery_url, solr_params, fields_to_export, summary_field=nil, map=nil
     # TODO this method is crazy sprawling, refactor & DRY
     require 'uri'
     require 'net/http'
@@ -95,22 +103,38 @@ module ApplicationHelper
 
 
     fields_to_export = JSON.parse(fields_to_export)
-    first_row = fields_to_export.map { |value| "" }
-    first_row = first_row.unshift(solr_params)
+    # puts fields_to_export
     headers = []
 
-    # headers = fields_to_export
-    headers = headers.unshift("Query parameters")
-    fields_to_export.each do |f|
-      headers << config.csv_output_fields[f]
+    if map.nil?
+      first_row = fields_to_export.map { |value| "" }
+      first_row = first_row.unshift(solr_params)
+      # headers = fields_to_export
+      headers = headers.unshift("Query parameters")
+      fields_to_export.each do |k,v|
+        headers << config.csv_output_fields[v]
+      end
+    else
+      # puts fields_to_export
+      # puts config.mapping_fields
+
+      fields_to_export.each do |k,v|
+        # puts v
+        unless k == "objfcpgeoloc_p"
+          headers << v
+        end
+      end
+      headers = headers + ["DecimalLatitude","DecimalLongitude"]
+      puts headers
     end
+
 
     # define the number of results per page returned by solr
     # this is a guess at a reasonable number without overloading the server? 
     # it could be too low though, esp for large result sets
     results_per_page = 10000
     requery_url_string = "#{requery_url}&rows=#{results_per_page}"
-    puts requery_url_string
+    # puts requery_url_string
     response = get_single_solr_page(requery_url_string,0)
     
     total_items = response['response']['numFound'].to_i
@@ -125,6 +149,46 @@ module ApplicationHelper
     page_queue = Queue.new
     (0..last_page_start_row).step(results_per_page) do |start_row|
       page_queue << start_row
+    end
+
+    if map != nil
+      require 'time'
+      map_tsv_filepath = "public/mapper_#{Time.current.localtime.strftime("%Y-%m-%d_%H-%M-%S")}.tsv"
+      # puts headers.to_s
+      # puts fields_to_export.to_s
+      CSV.open(map_tsv_filepath, "a", { :col_sep => "\t" }) do |csv|
+        csv << headers
+
+        workers = last_page.times.map do
+          Thread.new do
+            until page_queue.empty?
+              start_row = page_queue.pop(true) rescue nil
+              if start_row
+                response = get_single_solr_page(requery_url_string,start_row)
+                response['response']['docs'].each do |row|
+                  row_to_enter = []
+                  fields_to_export.each do |field,value|
+                    # puts field
+                    # puts row["#{field}"]
+                    if field == "objfcpgeoloc_p" &&  row[field].present?
+                      lat = row[field].split(",")[0].to_f
+                      long = row[field].split(",")[1].to_f
+                      row_to_enter << lat
+                      row_to_enter << long
+                    else
+                      row_to_enter << row[field]
+                    end
+                  end
+                  # puts row_to_enter
+                  csv << row_to_enter
+                end
+              end
+            end
+          end
+        end
+        workers.each(&:join)
+      end
+      return map_tsv_filepath
     end
 
     if summary_field != nil

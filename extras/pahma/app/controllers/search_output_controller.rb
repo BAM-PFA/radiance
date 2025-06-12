@@ -48,6 +48,15 @@ class SearchOutputController < ApplicationController
 		"deaccessioned_s"=>"Deaccession Flag"
 		}
 
+	config.mapping_fields = {
+
+		"objmusno_s" => "Museum Number",
+		"objname_s"=>"Object Name",
+		"objfcp_s"=>"Collection Place",
+		"objculturetree_ss"=>"Culture Hierarchy",
+		"objfcpgeoloc_p"=>"Lat/Long"
+	}
+
 	def csv_output_fields_form
 		respond_to do |format|
 		    format.html
@@ -77,6 +86,22 @@ class SearchOutputController < ApplicationController
 			JSON.parse(params[:solr_params]),
 			"#{fields_to_query}")
 		)
+		
+	end
+
+	def map_results
+		require 'json'
+		puts params[:solr_params]
+		view_context.requery_solr_map(
+			JSON.parse(params[:solr_params]),
+			config.mapping_fields.to_json
+			)
+		
+		respond_to do |format|
+		    format.html
+			# format.json
+		    # format.js
+		end
 		
 	end
 

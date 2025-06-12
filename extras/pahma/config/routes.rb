@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   post "/download_csv", to: "search_output#download_csv"
   post "/make_summary", to: "search_output#make_summary"
   get "/download_summary", to: "search_output#download_summary"
+  get "/map_results", to: "search_output#map_results"
 
   resources :bookmarks do
     concerns :exportable

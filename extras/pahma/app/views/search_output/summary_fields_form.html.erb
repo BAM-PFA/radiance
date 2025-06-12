@@ -8,8 +8,8 @@
     <!-- The fields to export are added to the application config in search_output_controller.rb -->
     <div class="row m-3">
       <div class="form-group">
-        <label class="invisible" for="summary-field">Select a field to summarize on</label>
-        <%= form.select :summary_field, config.csv_output_fields.collect {|field,label| [ label,field ] }, html: { class: "form-control" }, id: "summary-field", name: "summary-field", prompt:"Select a field to summarize on"  %>
+        <label aria-label="Select a metadata field by which to summarize the previous search results" for="summary-field-select"></label>
+        <%= form.select :summary_field, config.csv_output_fields.collect {|field,label| [ label,field ] }, {class: "form-control" }, id: "summary-field-select", name: "summary-field-select", prompt:"Select a field to summarize on"  %>
       </div>
     </div>
       <div class="row m-3">
@@ -28,7 +28,7 @@
         </div>
       </div>
     </div>
-  <div class="row">
+  <div class="row m-3">
     <%= form.submit "Create a summary", { class: "btn btn-primary" } %>
   </div>
   <% end %>
