@@ -9,7 +9,7 @@
     <div class="row m-3">
       <div class="form-group">
         <label aria-label="Select a metadata field by which to summarize the previous search results" for="summary-field-select"></label>
-        <%= form.select :summary_field, config.csv_output_fields.collect {|field,label| [ label,field ] }, {class: "form-control" }, id: "summary-field-select", name: "summary-field-select", prompt:"Select a field to summarize on"  %>
+        <%= form.select :summary_field, config.csv_output_fields.collect {|field,label| [ label,field ] }, {class: "form-control" }, id: "summary_field", name: "summary_field", prompt:"Select a field to summarize on"  %>
       </div>
     </div>
       <div class="row m-3">
