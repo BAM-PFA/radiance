@@ -210,7 +210,7 @@ module ApplicationHelper
     # puts fields_to_export
     fields_to_export.each {|column| count_string += ", GROUP_CONCAT(DISTINCT #{column}) AS '#{config.csv_output_fields[column]}'" }
     count_string += " FROM summary GROUP BY #{summary_field}_summary ORDER BY Count DESC #{limit};"
-    # puts count_string
+    puts count_string
     results = summary_database.query(count_string)
     # puts results[-1].to_s
     # puts results.columns
@@ -247,7 +247,8 @@ module ApplicationHelper
         headers << config.csv_output_fields[column]
       end
 
-      headers[0] = "Summarizing on #{headers[0]}"
+      headers.unshift("Count")
+      headers.unshift("Summarizing on #{config.csv_output_fields[summary_field]}")
 
       CSV.open(stats_csv_filepath, "a") do |csv|
         csv << headers
