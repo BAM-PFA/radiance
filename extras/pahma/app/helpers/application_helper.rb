@@ -336,7 +336,8 @@ module ApplicationHelper
         headers << config.csv_output_fields[column]
       end
 
-      headers[0] = "Summarizing on #{config.csv_output_fields[summary_field]}"
+      headers.unshift("Count")
+      headers.unshift("Summarizing on #{config.csv_output_fields[summary_field]}")
 
       CSV.open(stats_csv_filepath, "a") do |csv|
         csv << headers
