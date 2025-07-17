@@ -112,11 +112,11 @@ module ApplicationHelper
       # headers = fields_to_export
       headers = headers.unshift("Query parameters")
       fields_to_export.each do |k,v|
-        headers << config.csv_output_fields[v]
+        headers << Rails.application.config.csv_output_fields[v]
       end
     else
       # puts fields_to_export
-      # puts config.mapping_fields
+      # puts Rails.application.config.mapping_fields
 
       fields_to_export.each do |k,v|
         # puts v
@@ -292,10 +292,10 @@ module ApplicationHelper
       limit = ""
     end
     
-    count_string = "SELECT #{summary_field}_summary AS 'Summarizing on #{config.csv_output_fields[summary_field]}', COUNT(#{summary_field}_summary) AS 'Count'"
+    count_string = "SELECT #{summary_field}_summary AS 'Summarizing on #{Rails.application.config.csv_output_fields[summary_field]}', COUNT(#{summary_field}_summary) AS 'Count'"
     fields_to_export.delete('count')
     # puts fields_to_export
-    fields_to_export.each {|column| count_string += ", GROUP_CONCAT(DISTINCT #{column}) AS '#{config.csv_output_fields[column]}'" }
+    fields_to_export.each {|column| count_string += ", GROUP_CONCAT(DISTINCT #{column}) AS '#{Rails.application.config.csv_output_fields[column]}'" }
     count_string += " FROM summary GROUP BY #{summary_field}_summary ORDER BY Count DESC #{limit};"
     # puts count_string
     results = summary_database.query(count_string)
@@ -333,11 +333,11 @@ module ApplicationHelper
     elsif download == true
       headers = []
       fields_to_export.each do |column|
-        headers << config.csv_output_fields[column]
+        headers << Rails.application.config.csv_output_fields[column]
       end
 
       headers.unshift("Count")
-      headers.unshift("Summarizing on #{config.csv_output_fields[summary_field]}")
+      headers.unshift("Summarizing on #{Rails.application.config.csv_output_fields[summary_field]}")
 
       CSV.open(stats_csv_filepath, "a") do |csv|
         csv << headers
