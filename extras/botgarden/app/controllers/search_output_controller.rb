@@ -4,26 +4,6 @@ class SearchOutputController < ApplicationController
 	include ApplicationHelper
 	include ActionController::MimeResponds
 
-	# hash of solr_label => display label values for CSV export
-	config.csv_output_fields = {
-	  "objcsid_s" => "Object CSID",
-	  "canonicalNameComplete_s" => "Canonical Name",
-	  "gardenlocation_s" => "Garden Location",
-	  "accessionnumber_s" => "Accession Number",
-	  "deaddate_s" => "Dead Date",
-	  "family_s" => "Taxonomic Family",
-	  "genusOrAbove_s" => "Genus Or Above",
-	  "locality_s" => "Collecting Locality",
-	  "provenancetype_s" => "Provenance Type",
-	  "accessrestrictions_s" => "Access Restrictions",
-	  "accessionnotes_s" => "Accession Notes",
-	  "source_s" => "Source",
-	  "hybridflag_s" => "Hybrid?",
-	  "rare_s" => "Rare?",
-	  "vouchers_s" => "Has Vouchers?",
-	  "blob_ss" => "Has Images?"
-	  }
-
 	def csv_output_fields_form
 		respond_to do |format|
 		    format.html

@@ -142,6 +142,8 @@ module Blacklight
 
       query = search_builder
               .with(search_state)
+              # we need to set the document.unique_key to csid because of how the 
+              # botgarden solr indedx is constructed!
               .where(blacklight_config.document_model.unique_key => "objcsid_s")
               .merge(blacklight_config.fetch_many_document_params)
               .merge(extra_controller_params)

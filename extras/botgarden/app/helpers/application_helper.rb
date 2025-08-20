@@ -588,11 +588,11 @@ module ApplicationHelper
     if skip_render == true
       return "No data"
     end
-    columns = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    columns = ['January','February','March','April','May','June','July','August','September','October','November','December']
     
     thead = content_tag :thead do
       content_tag(:tr) do
-        columns.collect {|column| content_tag(:th,column)}.join().html_safe
+        columns.collect {|column| content_tag(:th,column, scope:"col", class:"mx-1")}.join().html_safe
       end
     end
 
@@ -607,7 +607,7 @@ module ApplicationHelper
     end
    
     # content_tag(:div, class: "table-responsive", st) do
-      content_tag(:table, thead.concat(tbody).html_safe, class: "table-bordered")
+      content_tag(:table, thead.concat(tbody).html_safe, class: "table table-bordered table-responsive my-1")
     # end
   end
 
