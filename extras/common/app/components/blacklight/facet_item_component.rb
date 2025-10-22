@@ -16,6 +16,8 @@ module Blacklight
       @selected = facet_item.selected?
       @wrapping_element = wrapping_element
       @suppress_link = suppress_link
+      @label_for_id = @facet_item.facet_config.label.parameterize
+      @value_for_id = if @facet_item.facet_config.range then 'range' else @facet_item.value.to_s.parameterize end
     end
 
     def call
@@ -74,7 +76,22 @@ module Blacklight
     # @private
     def render_facet_value
       tag.span(class: "facet-label") do
-        link_to_unless(@suppress_link, label, href, class: "facet-select", rel: "nofollow")
+        link_to_unless(
+          @suppress_link,
+          label,
+          helpers.with_screen_reader_alert(
+            href,
+            "Added #{@facet_item.facet_config.label}: \"#{label}\" to search constraints",
+            focus_target = [
+              "#remove-facet-#{@label_for_id}-#{@value_for_id}",
+              "#facet-#{@label_for_id}-toggle-btn",
+              '#facet-panel-collapse-toggle-btn'
+            ]
+          ),
+          id: "add-facet-#{@label_for_id}-#{@value_for_id}",
+          class: "facet-select",
+          rel: "nofollow"
+        )
       end + render_facet_count
     end
 
@@ -84,10 +101,23 @@ module Blacklight
     #
     # @private
     def render_selected_facet_value
-      tag.span(class: "facet-label") do
+      tag.span(class: "facet-label d-flex") do
         tag.span(label, class: "selected") +
           # remove link
-          link_to(href, class: "remove", rel: "nofollow") do
+          link_to(
+            helpers.with_screen_reader_alert(
+              href,
+              "Removed #{@facet_item.facet_config.label}: \"#{strip_tags(label)}\" from search constraints",
+              focus_target = [
+                "#add-facet-#{@label_for_id}-#{@value_for_id}",
+                "#facet-#{@label_for_id}-toggle-btn",
+                '#facet-panel-collapse-toggle-btn'
+              ]
+            ),
+            class: "remove",
+            id: "remove-facet-#{@label_for_id}-#{@value_for_id}",
+            rel: "nofollow"
+          ) do
             tag.span('✖', class: "remove-icon", aria: { hidden: true }) +
               tag.span(helpers.t(:'blacklight.search.facets.selected.remove', label: @facet_item.facet_config.label, value: label), class: 'sr-only visually-hidden')
           end

@@ -24,18 +24,11 @@ article header {
     margin: 0 0 5px 0;
     width: 150px;
   }
-
-  article {
-    float: left;
-    min-height: 400px;
-    width: 100%;
-  }
 }
 
 @media only screen and (min-width: 1140px) {
   .wrapper {
     margin: 0 auto;
-    width: 1026px;
   }
 
   .footer-container .footer-column {
@@ -61,13 +54,11 @@ section.showcase .isotope-item {
   -webkit-perspective: 1000px;
   perspective: 1000px;
   box-sizing: border-box;
-  float: left;
-  font-size: 0.875rem;
-  height: 22.5rem;
+  height: 24rem;
   margin: 0 15px 15px 0;
   overflow: hidden;
   position: relative;
-  width: 18.75rem;
+  width: 20rem;
   z-index: 1;
 }
 
@@ -81,10 +72,14 @@ section.showcase .isotope-item img {
 }
 
 section.showcase .isotope-item p {
-  padding: 0 15px;
+  margin-bottom: 0.5rem;
+  padding: 0 8px;
 }
 
-.isotope-item:hover .flipper, .isotope-item.hover .flipper {
+.isotope-item:focus .flipper,
+.isotope-item:focus-within .flipper,
+.isotope-item:hover .flipper,
+.isotope-item.hover .flipper {
   -moz-filter: "FlipH";
   -moz-transform: rotateY(180deg);
   -ms-filter: "FlipH";
@@ -112,7 +107,7 @@ section.showcase .isotope-item p {
 }
 
 .isotope-item .flipper .flipper-text {
-  margin-left: 20px;
+  margin-left: 16px;
   position: absolute;
   text-align: left;
   top: 20.4rem;
@@ -123,10 +118,11 @@ section.showcase .isotope-item p {
   background-color: whitesmoke;
   content: "";
   height: 100px;
+  left: -1px;
   opacity: .93;
   position: absolute;
   top: 19.4rem;
-  width: 18.75rem;
+  width: 20rem;
   z-index: 3;
 }
 
@@ -161,7 +157,7 @@ section.showcase .isotope-item p {
   backface-visibility: hidden;
   background-color: #eee;
   border: 1px solid #e6e6e6;
-  height: 22.5rem;
+  height: 24rem;
   left: 0;
   position: absolute;
   transform: rotateY(0deg);
@@ -181,11 +177,7 @@ section.showcase .isotope-item p {
 
 .isotope-item .back .citation {
   color: #5C686A;
-  font-size: 0.875em;
-}
-
-.isotope-item .back .desc {
-  font-size: 0.813rem;
+  font-size: 0.875rem;
 }
 
 .isotope-item .back p {
